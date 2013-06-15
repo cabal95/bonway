@@ -57,15 +57,6 @@ void Browser::NewService(std::string domain, std::string type,
 		std::string name, AvahiIfIndex interface,
 		AvahiProtocol protocol, AvahiLookupResultFlags flags)
 {
-    char ifname[64];
-
-
-    if (if_indextoname(interface, ifname) == NULL)
-        ifname[0] = '\0';
-
-    std::cout << "New " << type << " service " << name << "."
-		<< domain << " via " << ifname << ".\r\n";
-
     if (this->new_service != NULL) {
 	this->new_service(this->user_data, domain, type, name,
 			interface, protocol, flags);
@@ -77,15 +68,6 @@ void Browser::RemoveService(std::string domain, std::string type,
 		std::string name, AvahiIfIndex interface,
 		AvahiProtocol protocol)
 {
-    char ifname[64];
-
-
-    if (if_indextoname(interface, ifname) == NULL)
-        ifname[0] = '\0';
-
-    std::cout << "Removed " << type << " service " << name << "."
-		<< domain << " via " << ifname << ".\r\n";
-
     if (this->remove_service != NULL) {
 	this->remove_service(this->user_data, domain, type, name,
 			interface, protocol);

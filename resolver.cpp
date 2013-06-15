@@ -44,6 +44,34 @@ Resolver::~Resolver()
 
 void Resolver::Resolve()
 {
+// TODO:
+//	Some devices send multiple IP addresses. Primarily this is only
+//	done on multi-homed systems but there are a few exceptions that
+//	may cause trouble later:
+//		1) Systems configured with multiple IP addresses on the
+//		   same network adapter (pretty rare now-a-days, only 2
+//		   devices on my network do this and they are both my dev
+//		   boxes).
+//		2) Mac (maybe other) systems with VMware installed. This
+//		   causes the "hidden" IP addresses to be broadcasted for
+//		   some reason.
+//		3) Axis cameras broadcast a link-local address along with
+//		   the configured address. So which address Avahi returns
+//		   is completely random.
+//
+//	The work-around for this would be to do raw type A record lookups
+//	to manually get all IP addresses and filter out the unwanted ones.
+//
+//    avahi_record_browser_new(this->client,
+//		this->interface,
+//		this->protocol,
+//		"daniel.local",
+//		AVAHI_DNS_CLASS_IN,
+//		AVAHI_DNS_TYPE_A,
+//		(AvahiLookupFlags)0,
+//		cb,
+//		this);
+
     this->resolver = avahi_service_resolver_new(this->client,
 		this->interface, this->protocol, this->name.c_str(),
 		this->type.c_str(), this->domain.c_str(), AVAHI_PROTO_UNSPEC,
