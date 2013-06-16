@@ -13,6 +13,8 @@ namespace Avahi {
 
 Avahi::Avahi()
 {
+    this->terminated = false;
+
     this->poll = avahi_simple_poll_new();
     if (this->poll == NULL)
         throw std::runtime_error("Could not create event loop.");
@@ -40,8 +42,10 @@ Avahi::~Avahi()
 
 void Avahi::ClientCallback(AvahiClientState state)
 {
-    if (state == AVAHI_CLIENT_FAILURE)
+    if (state == AVAHI_CLIENT_FAILURE) {
+	std::cout << "Client state failed for some reason." << std::endl;
 	this->Terminate();
+    }
 }
 
 
@@ -114,8 +118,8 @@ void Avahi::Publish(Service svc)
 	return;
     }
 
-    std::list<std::string> list = svc.GetTxt();
-    std::list<std::string>::iterator it;
+    StringList list = svc.GetTxt();
+    StringList::iterator it;
     for (it = list.begin(); it != list.end(); it++)
 	txt = avahi_string_list_add(txt, (*it).c_str());
 

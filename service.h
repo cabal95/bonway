@@ -1,10 +1,10 @@
 #ifndef __SERVICE_H__
 #define __SERVICE_H__
 
-#include <string>
-#include <list>
+#include "common.h"
 #include <avahi-client/client.h>
 #include <string.h>
+
 
 namespace Avahi {
 
@@ -15,7 +15,7 @@ class Service {
 	AvahiProtocol		protocol;
 	AvahiAddress		address;
 	uint16_t		port;
-	std::list<std::string>	txt;
+	StringList		txt;
 
     protected:
 
@@ -34,7 +34,7 @@ class Service {
 	AvahiProtocol GetProtocol() { return this->protocol; }
 	const AvahiAddress *GetAddress() { return &this->address; }
 	uint16_t GetPort() { return this->port; }
-	std::list<std::string> GetTxt() { return this->txt; }
+	StringList GetTxt() { return this->txt; }
 
 	void SetName(std::string name) { this->name = name; }
 	void SetType(std::string type) { this->type = type; }
@@ -44,7 +44,7 @@ class Service {
 	void SetProtocol(AvahiProtocol protocol) { this->protocol = protocol; }
 	void SetAddress(const AvahiAddress *address) { memcpy(&this->address, address, sizeof(this->address)); }
 	void SetPort(uint16_t port) { this->port = port; }
-	void SetTxt(std::list<std::string> txt) { this->txt = txt; }
+	void SetTxt(StringList txt) { this->txt = txt; }
 }; /* class Service */
 
 } /* namespace Avahi */

@@ -105,7 +105,7 @@ void Resolver::ServiceFound(AvahiProtocol protocol, std::string host_name,
 		AvahiStringList *txt, AvahiLookupResultFlags flags)
 {
     if (this->service_found != NULL) {
-	std::list<std::string> txt_list = std::list<std::string>();
+	StringList txt_list = StringList();
 	AvahiStringList *ntxt = txt;
 
 	while (ntxt != NULL) {

@@ -6,7 +6,9 @@
 // Have the Commit() method be called every so often (maybe 5 seconds?).
 //
 
+#include "common.h"
 #include <iostream>
+#include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +17,7 @@
 #include <avahi-common/address.h>
 #include <avahi-common/strlst.h>
 #include <avahi-common/malloc.h>
+#include "config.h"
 #include "avahi.h"
 #include "browser.h"
 #include "resolver.h"
@@ -56,8 +59,8 @@ void service_found(void *user_data, Avahi::Resolver *resolver,
     std::cout << "\tProtocol = " << service.GetProtocol() << std::endl;
     std::cout << "\tHostname = " << service.GetHostName() << std::endl;
     std::cout << "\tAddress = " << caddress << std::endl;
-    std::list<std::string> lst = service.GetTxt();
-    std::list<std::string>::iterator it;
+    StringList lst = service.GetTxt();
+    StringList::iterator it;
     for (it = lst.begin(); it != lst.end(); ++it)
 	std::cout << "\tTXT = " << *it << std::endl;
 #endif
@@ -69,7 +72,7 @@ void service_found(void *user_data, Avahi::Resolver *resolver,
     avahi_address_parse("172.16.76.2", AVAHI_PROTO_UNSPEC, &address);
     service.SetAddress(&address);
 #endif
-    service.SetInterface(if_nametoindex("eth1"));
+    service.SetInterface(if_nametoindex("eth2"));
     avahi->Publish(service);
 
     delete resolver;
@@ -105,6 +108,7 @@ void service_new(void *user_data, std::string domain, std::string type,
 int main(int argc, char *argv[])
 {
     const char *config_file = "bonway.conf";
+    StringList types = StringList();
     int c;
 
 
@@ -127,11 +131,31 @@ int main(int argc, char *argv[])
 	}
     }
 
+    if (parse_config(config_file) != true)
+	return 1;
+
+    std::list<ConfigService> cs = config_services();
+    std::list<ConfigService>::const_iterator csit;
+    for (csit = cs.begin(); csit != cs.end(); csit++) {
+        StringList::const_iterator sit;
+        for (sit = (*csit).type.begin(); sit != (*csit).type.end(); sit++) {
+	    StringList::const_iterator it;
+
+	    it = std::find(types.begin(), types.end(), *sit);
+	    if (it == types.end()) {
+		types.push_back(*sit);
+		std::cout << *sit << std::endl;
+	    }
+	}
+    }
+
     avahi = new Avahi::Avahi();
-    Avahi::Browser *browser = avahi->Browse("_raop._tcp", "", NULL);
-    browser->new_service = service_new;
-    Avahi::Browser *browser2 = avahi->Browse("_airplay._tcp", "", NULL);
-    browser2->new_service = service_new;
+
+    StringList::const_iterator sit;
+    for (sit = types.begin(); sit != types.end(); sit++) {
+	Avahi::Browser *browser = avahi->Browse((*sit).c_str(), "", NULL);
+	browser->new_service = service_new;
+    }
 
     int result = avahi->Run();
     fprintf(stderr, "Result = %d\r\n", result);
