@@ -13,6 +13,7 @@ namespace Avahi {
 class Browser;
 class Resolver;
 class Service;
+class EntryGroup;
 
 class Avahi
 {
@@ -22,7 +23,9 @@ class Avahi
 	AvahiSimplePoll			*poll;
 	AvahiClient			*client;
 	std::list<Browser *>		browsers;
+	std::list<EntryGroup *>		groups;
 	bool				terminated;
+	int				last_commit;
 
 	static void client_callback(AvahiClient *, AvahiClientState, void *);
 
@@ -33,7 +36,7 @@ class Avahi
 	Avahi();
 	~Avahi();
 
-	int Run() { int status = 0; while ((status = this->Run(-1)) == 0); return status; }
+	int Run() { int status = 0; while ((status = this->Run(1000)) == 0); return status; }
 	int Run(int timeout);
 
 	Browser *Browse(std::string service, std::string domain, void *userdata);
@@ -42,6 +45,7 @@ class Avahi
 		void *userdata);
 	void	Publish(Service svc);
 
+	void Commit();
 	void Terminate();
 };
 

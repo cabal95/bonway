@@ -72,7 +72,7 @@ void service_found(void *user_data, Avahi::Resolver *resolver,
     avahi_address_parse("172.16.76.2", AVAHI_PROTO_UNSPEC, &address);
     service.SetAddress(&address);
 #endif
-    service.SetInterface(if_nametoindex("eth2"));
+    service.SetInterface(if_nametoindex("eth1"));
     avahi->Publish(service);
 
     delete resolver;

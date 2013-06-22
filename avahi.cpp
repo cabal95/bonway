@@ -1,19 +1,24 @@
 #include <stdio.h>
 #include <stdexcept>
 #include <iostream>
+#include <time.h>
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
 #include "avahi.h"
 #include "browser.h"
 #include "resolver.h"
 #include "service.h"
+#include "entrygroup.h"
 
 
 namespace Avahi {
 
 Avahi::Avahi()
 {
+    this->browsers = std::list<Browser *>();
+    this->groups = std::list<EntryGroup *>();
     this->terminated = false;
+    this->last_commit = 0;
 
     this->poll = avahi_simple_poll_new();
     if (this->poll == NULL)
@@ -35,6 +40,13 @@ Avahi::~Avahi()
 	delete browser;
     }
 
+    while (this->groups.size() > 0) {
+	EntryGroup *group = *this->groups.begin();
+
+	this->groups.remove(group);
+	delete group;
+    }
+
     avahi_client_free(this->client);
     avahi_simple_poll_free(this->poll);
 }
@@ -49,6 +61,20 @@ void Avahi::ClientCallback(AvahiClientState state)
 }
 
 
+void Avahi::Commit()
+{
+    std::list<EntryGroup *>::iterator it;
+
+
+    for (it = this->groups.begin(); it != this->groups.end(); it++) {
+	if ((*it)->isDirty() == true)
+	    (*it)->Commit();
+    }
+
+    this->last_commit = time(NULL);
+}
+
+
 void Avahi::Terminate()
 {
     if (this->terminated == false) {
@@ -60,6 +86,9 @@ void Avahi::Terminate()
 
 int Avahi::Run(int timeout)
 {
+    if ((time(NULL) - this->last_commit) > 5)
+	Commit();
+
     if (this->terminated)
 	return 1;
 
@@ -90,66 +119,26 @@ Resolver *Avahi::Resolve(AvahiIfIndex interface, AvahiProtocol protocol,
 }
 
 
-static void entry_group_callback(AvahiEntryGroup *group,
-	AvahiEntryGroupState state, void *userdata)
-{
-    if (state == AVAHI_ENTRY_GROUP_COLLISION)
-	std::cout << "Group publishing had an collision." << std::endl;
-
-    if (state == AVAHI_ENTRY_GROUP_FAILURE)
-	std::cout << "Group publishing had a failure." << std::endl;
-
-    return;
-}
-
-
 void Avahi::Publish(Service svc)
 {
-    AvahiStringList *txt = NULL;
-    AvahiEntryGroup *group;
-    int ret;
+    std::list<EntryGroup *>::iterator it;
+    EntryGroup *group = NULL;
 
 
-    group = avahi_entry_group_new(this->client, entry_group_callback, NULL);
-    if (group == NULL) {
-	std::cout << "Group new fail." << std::endl;
-	avahi_string_list_free(txt);
-
-	return;
+    for (it = this->groups.begin(); it != this->groups.end(); it++) {
+	group = (*it);
+	if (group->GetHostName() == svc.GetHostName()) {
+	    group->Publish(svc);
+	    return;
+	}
     }
 
-    StringList list = svc.GetTxt();
-    StringList::iterator it;
-    for (it = list.begin(); it != list.end(); it++)
-	txt = avahi_string_list_add(txt, (*it).c_str());
-
-    ret = avahi_entry_group_add_service_strlst(group,
-		svc.GetInterface(),
-		svc.GetProtocol(),
-		(AvahiPublishFlags)0,
-		svc.GetName().c_str(),
-		svc.GetType().c_str(),
-		svc.GetDomain().c_str(),
-		svc.GetHostName().c_str(),
-		svc.GetPort(),
-		txt);
-    if (ret != 0) {
-	std::cout << "Group add fail - " << ret << "." << std::endl;
-	return;
-    }
-
-    ret = avahi_entry_group_add_address(
-		group, svc.GetInterface(), svc.GetProtocol(),
-		(AvahiPublishFlags)0, svc.GetHostName().c_str(),
-		svc.GetAddress());
-    if (ret != 0)
-	std::cout << "Address error." << std::endl;
-
-    ret = avahi_entry_group_commit(group);
-    if (ret != 0) {
-	std::cout << "Commit fail." << std::endl;
-	return;
-    }
+    //
+    // No group found for this host name, create a new group.
+    //
+    group = new EntryGroup(this->client, svc.GetHostName(), svc.GetAddress());
+    this->groups.push_back(group);
+    group->Publish(svc);
 }
 
 
