@@ -1,0 +1,28 @@
+Need some helper functions in mdns_util that generate RRs needed for
+various things. Probably should return a list of the records. Maybe need
+a special struct to return the records in the proper types (AN, NS, AR).
+
+Three objects will be needed.
+
+1) An object for handling "local" services and name registration, such as
+   to indicate that the SSH service is available. It should have a helper
+   class that can read the XML formatted files used by Avahi.
+
+2) An object for handling "relay" services and name lookup. It should provide
+   caching for non-unique records (such as PTR records for _ssh._tcp) but
+   only pass-thru handling of unique records, such as A records. It should
+   also provide a "restricted" option that will only pass-thru A records
+   if they exist in the cache for an approved SRV (PTR?) record.
+
+3) An object for interfacing the above two objects with the mdns_socket
+   object. This object will basically be the front end interface that the
+   "user" will interact with. It will need to pass incoming packets to
+   the local and relay objects so they can process what they need to do
+   and it will need to provide a way for the local and relay objects to
+   send any data back to the network.
+
+
+The first two objects should have a similar public API interface to each
+other to keep things simple. The API should also be easy to understand and
+use in case the "user" will want to write their own interface object to
+replace #3.

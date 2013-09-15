@@ -1,19 +1,18 @@
 CC=gcc
 CPP=g++
-CFLAGS=-ggdb -Wall -std=c++11
-LDFLAGS=-lconfuse -lavahi-client -lavahi-common
-OBJS=main.o avahi.o browser.o resolver.o service.o config.o entrygroup.o
+LD=gcc
+CFLAGS=-Wall -ggdb -O0
+LDFLAGS=-lconfuse -lrt
+OBJS=main.o mdns_list.o mdns_util.o util.o mdns_query.o mdns_record.o mdns_a_record.o mdns_ptr_record.o mdns_packet.o mdns_socket.o mdns_txt_record.o mdns_srv_record.o mdns_nsec_record.o mdns_relay.o
 
 all: bonway
 
-clean:
-	rm -f bonway $(OBJS)
-
 bonway: $(OBJS)
-	$(CPP) $(CFLAGS) $(OBJS) -o bonway $(LDFLAGS)
+	$(LD) $(OBJS) -o bonway $(LDFLAGS)
+
+clean:
+	rm -rf bonway $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.cpp
-	$(CPP) $(CFLAGS) -c $< -o $@
