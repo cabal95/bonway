@@ -177,6 +177,8 @@ char *mdns_type_name(int type)
 
     if (type == MDNS_RR_TYPE_A)
 	return "A";
+    else if (type == MDNS_RR_TYPE_AAAA)
+	return "AAAA";
     else if (type == MDNS_RR_TYPE_PTR)
 	return "PTR";
     else if (type == MDNS_RR_TYPE_HINFO)

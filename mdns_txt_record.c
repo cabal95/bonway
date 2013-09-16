@@ -71,7 +71,7 @@ mdns_txt_record *mdns_txt_record_new_base(const char *name, int ttl)
 void mdns_txt_record_parse(mdns_txt_record *rr, const uint8_t *base,
 		int offset, int datalen)
 {
-    char *text;
+    char text[256];
     int u = 0, used = 0;
 
 
@@ -79,10 +79,12 @@ void mdns_txt_record_parse(mdns_txt_record *rr, const uint8_t *base,
 	return;
 
     while (used < datalen) {
-	text = mdns_get_name_part(base, (offset + used), &u);
-	used += u;
-	if (text != NULL)
-	    mdns_list_append(rr->txt, text);
+	u = base[offset + used];
+	memcpy(text, base + offset + used + 1, u);
+	used += (u + 1);
+	text[u] = '\0';
+	
+	mdns_list_append(rr->txt, strdup(text));
     }
 }
 
@@ -92,6 +94,7 @@ int mdns_txt_record_encode(const mdns_txt_record *rr,
 		mdns_list *names)
 {
     mdns_list_item	*item;
+    const char		*s;
     int			off = offset, needed, len;
 
 
@@ -103,7 +106,7 @@ int mdns_txt_record_encode(const mdns_txt_record *rr,
 	 item != NULL;
 	 item = mdns_list_item_next(item)) {
 	len = strlen(mdns_list_item_object(item));
-	needed += (1 + len);
+	needed += ((len / 256) + 1 + len);
     }
     if (needed == 0)
 	needed = 1;
@@ -117,9 +120,10 @@ int mdns_txt_record_encode(const mdns_txt_record *rr,
     for (item = mdns_list_first(rr->txt);
 	 item != NULL;
 	 item = mdns_list_item_next(item)) {
-	len = strlen(mdns_list_item_object(item));
+	s = (const char *)mdns_list_item_object(item);
+	len = strlen(s);
 	base[off++] = (uint8_t)len;
-	memcpy(base + off, mdns_list_item_object(item), len);
+	memcpy(base + off, s, len);
 	off += len;
     }
 

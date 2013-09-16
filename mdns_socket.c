@@ -178,6 +178,7 @@ int mdns_socket_recv(mdns_socket *sock, mdns_packet **out_packet, struct sockadd
     // Read in a message.
     //
     datalen = recvmsg(sock->fd, &msg, 0);
+//printf("Recieved %d bytes\r\n", datalen);
     if (datalen < 0)
 	return -1;
 

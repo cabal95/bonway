@@ -1,3 +1,35 @@
+Need a mdns_util function that returns the number of bytes needed to store
+a name. This may be what is causing the aborts on large NSEC records.
+
+---
+
+Need a short-term caching system when reading packets, we need to be able
+to check for the TC bit on queries and re-assembly packets into the larger
+packets.
+
+Re-assembled packets should be flagged as either a query or a response.
+
+When sending, individual RRs should be sent so they can be queued up
+and sent in bulk.
+
+---
+
+It sorta works now.  Most services show up, though they sometimes vanish
+right away.  I'm thinking the bits are not being set properly on the
+outgoing packets.  I might be setting the cache flush bit or something
+like that and causing issues.  I should read a packet, decode it and
+then re-encoe it and compare the two to see what is different. In theory
+they should be identical.
+
+
+---
+
+
+
+
+
+
+
 Need some helper functions in mdns_util that generate RRs needed for
 various things. Probably should return a list of the records. Maybe need
 a special struct to return the records in the proper types (AN, NS, AR).

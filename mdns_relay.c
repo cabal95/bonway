@@ -44,12 +44,42 @@ void mdns_relay_free(mdns_relay *relay)
 int mdns_relay_process(mdns_relay *relay, int mstimeout)
 {
     mdns_packet	*packet;
-    int		result, iface;
+    int		result, iface, i;
+    struct sockaddr_in from;
+    static int  eth0_iface = -1, eth1_iface = -1;
 
 
-    result = mdns_socket_recv(relay->socket, &packet, NULL, &iface);
+    if (eth0_iface == -1) {
+	for (eth0_iface = 0; eth0_iface < 32; eth0_iface++) {
+	    if (relay->socket->interfaces[eth0_iface].name != NULL && strcmp(relay->socket->interfaces[eth0_iface].name, "eth0") == 0)
+		break;
+	}
+    }
+
+    if (eth1_iface == -1) {
+	for (eth1_iface = 0; eth1_iface < 32; eth1_iface++) {
+	    if (relay->socket->interfaces[eth1_iface].name != NULL && strcmp(relay->socket->interfaces[eth1_iface].name, "eth1") == 0)
+		break;
+	}
+    }
+
+    result = mdns_socket_recv(relay->socket, &packet, (struct sockaddr *)&from, &iface);
     if (result == 0) {
-	print_packet(relay, packet, iface);
+	for (i = 0; i < MAX_INTERFACES; i++) {
+	    if (relay->socket->interfaces[i].name != NULL && memcmp(&from.sin_addr.s_addr, &relay->socket->interfaces[i].address, sizeof(from.sin_addr.s_addr)) == 0) {
+//		printf("Ignoring local packet\r\n");
+		break;
+	    }
+	}
+
+	if (i == MAX_INTERFACES && iface == eth0_iface) {
+	    print_packet(relay, packet, iface);
+	    mdns_socket_send(relay->socket, packet, eth1_iface);
+	}
+	if (i == MAX_INTERFACES && iface == eth1_iface) {
+	    print_packet(relay, packet, iface);
+	    mdns_socket_send(relay->socket, packet, eth0_iface);
+	}
     }
 
     return 0;

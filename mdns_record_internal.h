@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "mdns_list.h"
 #include "mdns_a_record.h"
+#include "mdns_aaaa_record.h"
 #include "mdns_ptr_record.h"
 #include "mdns_txt_record.h"
 #include "mdns_srv_record.h"
@@ -14,6 +15,13 @@ extern mdns_a_record	*mdns_a_record_new_base(const char *name, int ttl);
 extern void		mdns_a_record_parse(mdns_a_record *record,
 				const uint8_t *base, int offset, int datalen);
 extern int		mdns_a_record_encode(const mdns_a_record *rr,
+				uint8_t *base, int offset, size_t size,
+				size_t *used, mdns_list *names);
+
+extern mdns_aaaa_record	*mdns_aaaa_record_new_base(const char *name, int ttl);
+extern void		mdns_aaaa_record_parse(mdns_aaaa_record *record,
+				const uint8_t *base, int offset, int datalen);
+extern int		mdns_aaaa_record_encode(const mdns_aaaa_record *rr,
 				uint8_t *base, int offset, size_t size,
 				size_t *used, mdns_list *names);
 

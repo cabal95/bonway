@@ -6,6 +6,7 @@
 #define MDNS_RR_TYPE_PTR	0x0c
 #define MDNS_RR_TYPE_HINFO	0x0d
 #define MDNS_RR_TYPE_TXT	0x10
+#define MDNS_RR_TYPE_AAAA	0x1c
 #define MDNS_RR_TYPE_SRV	0x21
 #define MDNS_RR_TYPE_NSEC	0x2f
 #define MDNS_RR_TYPE_ANY	0xff

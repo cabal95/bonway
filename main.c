@@ -25,14 +25,14 @@
 int
 main(int argc, char *argv[])
 {
-/*
+
     mdns_socket *sock;
     mdns_packet *packet;
 
 
-    sock = mdns_socket_new();
-    assert(sock != NULL);
-    mdns_socket_bind(sock, "eth0", "LAN");
+//    sock = mdns_socket_new();
+//    assert(sock != NULL);
+//    mdns_socket_bind(sock, "eth1", "LAN");
 
     //
     // Build and send a packet.
@@ -42,6 +42,7 @@ main(int argc, char *argv[])
 
     struct in_addr addr;
     inet_aton("172.16.76.100", &addr);
+/*
     mdns_a_record *a = mdns_a_record_new("test.local", 120, addr);
     mdns_list_append(packet->answers, a);
     mdns_nsec_record *nsec = mdns_nsec_record_new("test.local", 120, "test.local");
@@ -64,7 +65,7 @@ main(int argc, char *argv[])
 		[NSEC IN 4500ttl daniel@Wandering Soul._teleport._tcp.local
 		TXT SRV]
 */
-/*
+
     mdns_a_record *a;
     mdns_txt_record *txt;
     mdns_ptr_record *ptr;
@@ -99,14 +100,16 @@ main(int argc, char *argv[])
     mdns_nsec_record_set_type(nsec, MDNS_RR_TYPE_SRV);
     mdns_nsec_record_set_type(nsec, MDNS_RR_TYPE_TXT);
     mdns_list_append(packet->additionals, nsec);
-*/
+
 
 //    mdns_query *q;
 //    q = mdns_query_new("_workstation._tcp.local", MDNS_RR_TYPE_PTR, MDNS_RR_CLASS_IN);
 //    mdns_list_append(packet->queries, q);
 //    q = mdns_query_new("_ssh._tcp.local", MDNS_RR_TYPE_PTR, MDNS_RR_CLASS_IN);
 //    mdns_list_append(packet->queries, q);
-//    mdns_socket_send(sock, packet, if_nametoindex("eth0"));
+//    mdns_socket_send(sock, packet, if_nametoindex("eth1"));
+//    sleep(1);
+//return 0;
 
     /*
      * Read a packet forever.
@@ -165,6 +168,7 @@ main(int argc, char *argv[])
 
     relay = mdns_relay_new();
     mdns_socket_bind(relay->socket, "eth0", "LAN");
+    mdns_socket_bind(relay->socket, "eth1", "Public");
 
     while (1) {
 	mdns_relay_process(relay, 1000);

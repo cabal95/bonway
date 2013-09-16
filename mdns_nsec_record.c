@@ -108,7 +108,7 @@ int mdns_nsec_record_encode(const mdns_nsec_record *rr, uint8_t *base,
     //
     // Store the next name.
     //
-    ret = mdns_put_name(base, off, rr->next_name, &u, NULL);
+    ret = mdns_put_name(base, off, rr->next_name, &u, names);
     if (ret != 0)
 	return ret;
     off += u;

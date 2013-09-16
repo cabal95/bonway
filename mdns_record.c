@@ -59,6 +59,13 @@ mdns_record *mdns_record_decode(const uint8_t *data, int offset, int *used)
 	    break;
 	}
 
+	case MDNS_RR_TYPE_AAAA:
+	{
+	    record = mdns_aaaa_record_new_base(name, ttl);
+	    mdns_aaaa_record_parse(record, data, (off - dlen), dlen);
+	    break;
+	}
+
 	case MDNS_RR_TYPE_PTR:
 	{
 	    record = mdns_ptr_record_new_base(name, ttl);
@@ -115,7 +122,7 @@ int mdns_record_encode(const mdns_record *rr, uint8_t *base,
     memcpy(base + off, &type, sizeof(type));
     off += sizeof(type);
 
-    clazz = htons(rr->clazz | 0x8000);
+    clazz = htons(rr->clazz/* | 0x8000*/);
     memcpy(base + off, &clazz, sizeof(clazz));
     off += sizeof(clazz);
 
@@ -129,6 +136,13 @@ int mdns_record_encode(const mdns_record *rr, uint8_t *base,
     switch (rr->type) {
 	case MDNS_RR_TYPE_A:
 	    ret = mdns_a_record_encode((mdns_a_record *)rr, base, off,
+			size, &u, names);
+	    if (ret)
+		return ret;
+	    break;
+
+	case MDNS_RR_TYPE_AAAA:
+	    ret = mdns_aaaa_record_encode((mdns_aaaa_record *)rr, base, off,
 			size, &u, names);
 	    if (ret)
 		return ret;
@@ -191,6 +205,10 @@ void mdns_record_free(mdns_record *rr)
 	    mdns_a_record_free((mdns_a_record *)rr);
 	    break;
 
+	case MDNS_RR_TYPE_AAAA:
+	    mdns_aaaa_record_free((mdns_aaaa_record *)rr);
+	    break;
+
 	case MDNS_RR_TYPE_PTR:
 	    mdns_ptr_record_free((mdns_ptr_record *)rr);
 	    break;
@@ -221,6 +239,10 @@ char *mdns_record_tostring(mdns_record *rr)
     switch (rr->type) {
 	case MDNS_RR_TYPE_A:
 	    return mdns_a_record_tostring((mdns_a_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_AAAA:
+	    return mdns_aaaa_record_tostring((mdns_aaaa_record *)rr);
 	    break;
 
 	case MDNS_RR_TYPE_PTR:
