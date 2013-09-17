@@ -87,7 +87,7 @@ int mdns_nsec_record_encode(const mdns_nsec_record *rr, uint8_t *base,
 		int offset, size_t size, size_t *used, mdns_list *names)
 {
     size_t	u;
-    int		off = offset, ret, i, count;
+    int		off = offset, ret, i, count, namelen;
 
 
     //
@@ -102,7 +102,8 @@ int mdns_nsec_record_encode(const mdns_nsec_record *rr, uint8_t *base,
     //
     // Make sure there is room in the buffer.
     //
-    if ((offset + strlen(rr->next_name) + 2 + count + 2) > size)
+    namelen = mdns_put_name_size_required(base, off, rr->next_name, names);
+    if ((offset + namelen + count + 2) > size)
 	return -ENOMEM;
 
     //

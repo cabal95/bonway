@@ -168,6 +168,55 @@ int mdns_put_name(uint8_t *base, int offset, const char *name, size_t *used, mdn
 
 
 //
+// Determines the amount of data required to store the DNS name.
+//
+int mdns_put_name_size_required(uint8_t *base, int offset, const char *name, mdns_list *names)
+{
+    const char	*s, *n = name;
+    name_idx	*nidx;
+    int		len, u = 0;
+
+
+    do {
+	//
+	// Search the list of names, if applicable, for the name we are
+	// about to add. If found, use a back reference to it.
+	//
+	if (names != NULL) {
+	    mdns_list_item *item;
+
+	    for (item = names->head; item != NULL; item = item->next) {
+		nidx = (name_idx *)mdns_list_item_object(item);
+		if (strcmp(nidx->name, n) == 0) {
+		    u += 2;
+
+		    return u;
+		}
+	    }
+	}
+
+	//
+	// Find the length of this segment.
+	//
+	s = strchr(n, '.');
+	if (s != NULL)
+	    len = (s - n);
+	else
+	    len = strlen(n);
+
+	u += 1;
+	u += len;
+
+	n = (s + 1);
+    } while (s != NULL);
+
+    u += 1;
+
+    return u;
+}
+
+
+//
 // Return the string name of the given mDNS record type.
 //
 char *mdns_type_name(int type)

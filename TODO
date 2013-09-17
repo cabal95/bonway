@@ -1,8 +1,3 @@
-Need a mdns_util function that returns the number of bytes needed to store
-a name. This may be what is causing the aborts on large NSEC records.
-
----
-
 Need a short-term caching system when reading packets, we need to be able
 to check for the TC bit on queries and re-assembly packets into the larger
 packets.
