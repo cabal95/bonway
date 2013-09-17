@@ -3,12 +3,18 @@
 
 #include "mdns_socket.h"
 #include "mdns_list.h"
+#include "mdns_util.h"
 
 
 typedef struct g_mdns_relay {
     mdns_socket	*socket;
 
     mdns_list	*allowed_types;
+    mdns_list	*known_records[MAX_INTERFACES];
+    mdns_list	*query_queue[MAX_INTERFACES];
+    mdns_list	*answer_queue[MAX_INTERFACES];
+
+    mtime_t	last_expire_check;
 } mdns_relay;
 
 

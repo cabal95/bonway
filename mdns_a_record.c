@@ -20,10 +20,10 @@ mdns_a_record *mdns_a_record_new(const char *name, int ttl,
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_a_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_A;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     memcpy(&rr->address, &address, sizeof(rr->address));
 
@@ -51,10 +51,10 @@ mdns_a_record *mdns_a_record_new_base(const char *name, int ttl)
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_a_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_A;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     return rr;
 }

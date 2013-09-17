@@ -21,10 +21,10 @@ mdns_nsec_record *mdns_nsec_record_new(const char *name, int ttl,
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_nsec_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_NSEC;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     rr->next_name = strdup(next_name);
 
@@ -54,10 +54,10 @@ mdns_nsec_record *mdns_nsec_record_new_base(const char *name, int ttl)
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_nsec_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_NSEC;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     return rr;
 }

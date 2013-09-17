@@ -2,13 +2,11 @@
 #define __MDNS_SRV_RECORD_H__
 
 #include <arpa/inet.h>
+#include "mdns_record.h"
 
 
 typedef struct g_mdns_srv_record {
-    char	*name;
-    int		type;
-    int		clazz;
-    int		ttl;
+    MDNS_RECORD_BASE_DECL
 
     uint16_t	priority;
     uint16_t	weight;

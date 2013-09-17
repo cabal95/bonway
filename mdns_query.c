@@ -19,7 +19,7 @@ mdns_query *mdns_query_new(const char *name, int type, int clazz)
     assert(query != NULL);
     bzero(query, sizeof(mdns_query));
 
-    query->name = strdup(name);
+    mdns_query_set_name(query, name);
     query->type = type;
     query->clazz = clazz;
 
@@ -95,6 +95,40 @@ int mdns_query_encode(const mdns_query *query, uint8_t *base, int offset, size_t
 	*used = (off - offset);
 
     return 0;
+}
+
+
+void mdns_query_set_name(mdns_query *query, const char *name)
+{
+    char	*tmp, *s;
+    int		i;
+
+
+    if (query->name != NULL)
+	free(query->name);
+    query->name = strdup(name);
+
+    for (i = 0; i < query->name_segment_count; i++) {
+	if (query->name_segment[i] != NULL) {
+	    free(query->name_segment[i]);
+	    query->name_segment[i] = NULL;
+	}
+    }
+
+    tmp = strdup(name);
+    for (i = 0; i < MAX_NAME_SEGMENTS; i++) {
+	s = strrchr(tmp, '.');
+	if (s != NULL) {
+	    *s++ = '\0';
+	    query->name_segment[i] = strdup(s);
+	}
+	else {
+	    query->name_segment[i] = strdup(tmp);
+	    break;
+	}
+    }
+    query->name_segment_count = (i + 1);
+    free(tmp);
 }
 
 

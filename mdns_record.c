@@ -5,6 +5,7 @@
 #include <string.h>
 #include <strings.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include "mdns_util.h"
 #include "mdns.h"
 #include "mdns_record.h"
@@ -266,4 +267,47 @@ char *mdns_record_tostring(mdns_record *rr)
 	    abort();
     }
 }
+
+
+void mdns_record_set_ttl(mdns_record *rr, int ttl)
+{
+    rr->ttl = ttl;
+    rr->ttl_base = time(NULL);
+}
+
+
+void mdns_record_set_name(mdns_record *rr, const char *name)
+{
+    char	*tmp, *s;
+    int		i;
+
+
+    if (rr->name != NULL)
+	free(rr->name);
+    rr->name = strdup(name);
+
+    for (i = 0; i < rr->name_segment_count; i++) {
+	if (rr->name_segment[i] != NULL) {
+	    free(rr->name_segment[i]);
+	    rr->name_segment[i] = NULL;
+	}
+    }
+
+    tmp = strdup(name);
+    for (i = 0; i < MAX_NAME_SEGMENTS; i++) {
+	s = strrchr(tmp, '.');
+	if (s != NULL) {
+	    *s++ = '\0';
+	    rr->name_segment[i] = strdup(s);
+	}
+	else {
+	    rr->name_segment[i] = strdup(tmp);
+	    break;
+	}
+    }
+    rr->name_segment_count = (i + 1);
+    free(tmp);
+}
+
+
 

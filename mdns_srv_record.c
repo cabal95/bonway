@@ -20,10 +20,10 @@ mdns_srv_record *mdns_srv_record_new(const char *name, int ttl,
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_srv_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_SRV;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     rr->priority = 0;
     rr->weight = 0;
@@ -56,10 +56,10 @@ mdns_srv_record *mdns_srv_record_new_base(const char *name, int ttl)
     assert(rr != NULL);
     bzero(rr, sizeof(mdns_srv_record));
 
-    rr->name = strdup(name);
+    mdns_record_set_name((mdns_record *)rr, name);
+    mdns_record_set_ttl((mdns_record *)rr, ttl);
     rr->type = MDNS_RR_TYPE_SRV;
     rr->clazz = MDNS_RR_CLASS_IN;
-    rr->ttl = ttl;
 
     rr->priority = 0;
     rr->weight = 0;

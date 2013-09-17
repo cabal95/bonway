@@ -2,13 +2,11 @@
 #define __MDNS_PTR_RECORD_H__
 
 #include <arpa/inet.h>
+#include "mdns_record.h"
 
 
 typedef struct g_mdns_ptr_record {
-    char	*name;
-    int		type;
-    int		clazz;
-    int		ttl;
+    MDNS_RECORD_BASE_DECL
 
     char	*target_name;
 } mdns_ptr_record;

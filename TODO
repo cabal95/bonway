@@ -1,3 +1,8 @@
+Basic filtering for airplay is working. Need to properly assemble the NSEC
+records and A records when sending an answer packet to speed things up.
+
+--
+
 Need a short-term caching system when reading packets, we need to be able
 to check for the TC bit on queries and re-assembly packets into the larger
 packets.

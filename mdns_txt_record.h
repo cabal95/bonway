@@ -2,14 +2,12 @@
 #define __MDNS_TXT_RECORD_H__
 
 #include <arpa/inet.h>
+#include "mdns_record.h"
 #include "mdns_list.h"
 
 
 typedef struct g_mdns_txt_record {
-    char	*name;
-    int		type;
-    int		clazz;
-    int		ttl;
+    MDNS_RECORD_BASE_DECL
 
     mdns_list	*txt;
 } mdns_txt_record;

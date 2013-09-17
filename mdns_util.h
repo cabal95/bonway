@@ -20,7 +20,7 @@ extern int mdns_put_name_size_required(uint8_t *base, int offset, const char *na
 extern char *mdns_type_name(int type);
 extern char *mdns_class_name(int clazz);
 
-extern mtime_t mdns_get_time();
+extern mtime_t mdns_time();
 
 #endif /* __MDNS_UTIL_H__ */
 

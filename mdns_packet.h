@@ -5,6 +5,11 @@
 #include "mdns_list.h"
 
 
+#define MDNS_PACKET_FLAG_QR	0x8000
+#define MDNS_PACKET_FLAG_AA	0x0400
+#define MDNS_PACKET_FLAG_TC	0x0200
+
+
 typedef struct g_mdns_packet {
     int 	flags;
     mdns_list	*queries;

@@ -2,13 +2,11 @@
 #define __MDNS_AAAA_RECORD_H__
 
 #include <arpa/inet.h>
+#include "mdns_record.h"
 
 
 typedef struct g_mdns_aaaa_record {
-    char	*name;
-    int		type;
-    int		clazz;
-    int		ttl;
+    MDNS_RECORD_BASE_DECL
 
     struct in6_addr	address;
 } mdns_aaaa_record;

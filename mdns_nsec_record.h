@@ -2,13 +2,11 @@
 #define __MDNS_NSEC_RECORD_H__
 
 #include <arpa/inet.h>
+#include "mdns_record.h"
 
 
 typedef struct g_mdns_nsec_record {
-    char	*name;
-    int		type;
-    int		clazz;
-    int		ttl;
+    MDNS_RECORD_BASE_DECL
 
     char	*next_name;
     uint8_t	bitmap[32];
