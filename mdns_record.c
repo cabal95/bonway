@@ -310,4 +310,55 @@ void mdns_record_set_name(mdns_record *rr, const char *name)
 }
 
 
+mdns_record *mdns_record_copy(const mdns_record *rr)
+{
+    assert(rr != NULL);
+
+    switch (rr->type) {
+	case MDNS_RR_TYPE_A:
+	    return (mdns_record *)mdns_a_record_copy((mdns_a_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_AAAA:
+	    return (mdns_record *)mdns_aaaa_record_copy((mdns_aaaa_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_PTR:
+	    return (mdns_record *)mdns_ptr_record_copy((mdns_ptr_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_TXT:
+	    return (mdns_record *)mdns_txt_record_copy((mdns_txt_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_SRV:
+	    return (mdns_record *)mdns_srv_record_copy((mdns_srv_record *)rr);
+	    break;
+
+	case MDNS_RR_TYPE_NSEC:
+	    return (mdns_record *)mdns_nsec_record_copy((mdns_nsec_record *)rr);
+	    break;
+
+	default:
+	    fprintf(stderr, "Unknown record type %d in mdns_record_copy()\r\n", rr->type);
+	    abort();
+    }
+}
+
+
+void mdns_record_copy_base(const mdns_record *rr, mdns_record *copy)
+{
+    int i;
+
+
+    copy->name = strdup(rr->name);
+    copy->type = rr->type;
+    copy->clazz = rr->clazz;
+    copy->ttl = rr->ttl;
+    copy->name_segment_count = rr->name_segment_count;
+    for (i = 0; i < rr->name_segment_count; i++)
+	copy->name_segment[i] = strdup(rr->name_segment[i]);
+    copy->ttl_base = rr->ttl_base;
+}
+
 

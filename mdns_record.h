@@ -35,5 +35,7 @@ extern char *mdns_record_tostring(mdns_record *rr);
 extern void mdns_record_set_ttl(mdns_record *rr, int ttl);
 extern void mdns_record_set_name(mdns_record *rr, const char *name);
 
+extern mdns_record *mdns_record_copy(const mdns_record *rr);
+
 #endif /* __MDNS_RECORD_H__ */
 

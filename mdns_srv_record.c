@@ -7,6 +7,7 @@
 #include "mdns.h"
 #include "mdns_util.h"
 #include "mdns_srv_record.h"
+#include "mdns_record_internal.h"
 
 
 
@@ -125,6 +126,26 @@ int mdns_srv_record_encode(const mdns_srv_record *rr,
 }
 
 
+mdns_srv_record *mdns_srv_record_copy(const mdns_srv_record *rr)
+{
+    mdns_srv_record	*copy;
+
+
+    copy = (mdns_srv_record *)malloc(sizeof(mdns_srv_record));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_srv_record));
+
+    mdns_record_copy_base((mdns_record *)rr, (mdns_record *)copy);
+
+    copy->priority = rr->priority;
+    copy->weight = rr->weight;
+    copy->port = rr->port;
+    copy->target_name = strdup(rr->target_name);
+
+    return copy;
+}
+    
+    
 char *mdns_srv_record_tostring(mdns_srv_record *rr)
 {               
     char str[128];

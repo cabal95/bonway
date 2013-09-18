@@ -8,6 +8,7 @@
 #include "mdns_util.h"
 #include "mdns_nsec_record.h"
 #include "util.h"
+#include "mdns_record_internal.h"
 
 
 
@@ -167,6 +168,24 @@ void mdns_nsec_record_set_type(mdns_nsec_record *rr, int type)
 }
 
 
+mdns_nsec_record *mdns_nsec_record_copy(const mdns_nsec_record *rr)
+{
+    mdns_nsec_record	*copy;
+
+
+    copy = (mdns_nsec_record *)malloc(sizeof(mdns_nsec_record));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_nsec_record));
+
+    mdns_record_copy_base((mdns_record *)rr, (mdns_record *)copy);
+
+    copy->next_name = strdup(rr->next_name);
+    memcpy(copy->bitmap, rr->bitmap, sizeof(copy->bitmap));
+
+    return copy;
+}
+    
+    
 char *mdns_nsec_record_tostring(mdns_nsec_record *rr)
 {               
     char	str[256];

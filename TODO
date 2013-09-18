@@ -1,8 +1,3 @@
-Need to add a mdns_record_copy() function (and helper functions) to make
-a copy of a record. Currently when adding a record to a list it cannot be
-removed without it being freed, this is a problem so we need to be able
-to add duplicated records.
-
 Basic filtering for airplay is working. Need to properly assemble the NSEC
 records and A records when sending an answer packet to speed things up.
 

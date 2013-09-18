@@ -7,6 +7,7 @@
 #include "mdns.h"
 #include "mdns_util.h"
 #include "mdns_a_record.h"
+#include "mdns_record_internal.h"
 
 
 
@@ -64,6 +65,23 @@ void mdns_a_record_parse(mdns_a_record *rr, const uint8_t *base,
 		int offset, int datalen)
 {
     memcpy(&rr->address, base + offset, sizeof(rr->address));
+}
+
+
+mdns_a_record *mdns_a_record_copy(const mdns_a_record *rr)
+{
+    mdns_a_record	*copy;
+
+
+    copy = (mdns_a_record *)malloc(sizeof(mdns_a_record));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_a_record));
+
+    mdns_record_copy_base((mdns_record *)rr, (mdns_record *)copy);
+
+    memcpy(&copy->address, &rr->address, sizeof(copy->address));
+
+    return copy;
 }
 
 

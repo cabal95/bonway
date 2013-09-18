@@ -8,6 +8,7 @@
 #include "mdns_util.h"
 #include "mdns_txt_record.h"
 #include "util.h"
+#include "mdns_record_internal.h"
 
 
 
@@ -142,6 +143,23 @@ int mdns_txt_record_encode(const mdns_txt_record *rr,
 }
 
 
+mdns_txt_record *mdns_txt_record_copy(const mdns_txt_record *rr)
+{
+    mdns_txt_record	*copy;
+
+
+    copy = (mdns_txt_record *)malloc(sizeof(mdns_txt_record));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_txt_record));
+
+    mdns_record_copy_base((mdns_record *)rr, (mdns_record *)copy);
+
+    copy->txt = mdns_list_copy(rr->txt);
+
+    return copy;
+}
+    
+    
 char *mdns_txt_record_tostring(mdns_txt_record *rr)
 {               
     char		str[1024];

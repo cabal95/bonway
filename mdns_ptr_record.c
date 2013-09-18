@@ -7,6 +7,7 @@
 #include "mdns.h"
 #include "mdns_util.h"
 #include "mdns_ptr_record.h"
+#include "mdns_record_internal.h"
 
 
 
@@ -97,6 +98,23 @@ int mdns_ptr_record_encode(const mdns_ptr_record *rr,
 }
 
 
+mdns_ptr_record *mdns_ptr_record_copy(const mdns_ptr_record *rr)
+{
+    mdns_ptr_record	*copy;
+
+
+    copy = (mdns_ptr_record *)malloc(sizeof(mdns_ptr_record));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_ptr_record));
+
+    mdns_record_copy_base((mdns_record *)rr, (mdns_record *)copy);
+
+    copy->target_name = strdup(rr->target_name);
+
+    return copy;
+}
+    
+    
 char *mdns_ptr_record_tostring(mdns_ptr_record *rr)
 {               
     char str[256];
