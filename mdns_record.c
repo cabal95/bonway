@@ -199,7 +199,14 @@ int mdns_record_encode(const mdns_record *rr, uint8_t *base,
 
 void mdns_record_free(mdns_record *rr)
 {
+    int i;
+
+
     assert(rr != NULL);
+
+    free(rr->name);
+    for (i = 0; i < rr->name_segment_count; i++)
+	free(rr->name_segment[i]);
 
     switch (rr->type) {
 	case MDNS_RR_TYPE_A:
@@ -302,10 +309,11 @@ void mdns_record_set_name(mdns_record *rr, const char *name)
 	}
 	else {
 	    rr->name_segment[i] = strdup(tmp);
+	    i += 1;
 	    break;
 	}
     }
-    rr->name_segment_count = (i + 1);
+    rr->name_segment_count = i;
     free(tmp);
 }
 

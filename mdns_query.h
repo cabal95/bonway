@@ -24,6 +24,8 @@ extern int mdns_query_encode(const mdns_query *query, uint8_t *base, int offset,
 
 extern void mdns_query_set_name(mdns_query *query, const char *name);
 
+extern mdns_query *mdns_query_copy(const mdns_query *query);
+
 extern char *mdns_query_tostring(mdns_query *query);
 
 #endif /* __MDNS_QUERY_H__ */

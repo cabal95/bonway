@@ -181,6 +181,7 @@ int mdns_relay_process(mdns_relay *relay, int mstimeout)
 	    }
 	}
     }
+    mdns_packet_free(packet);
 
     check_expired_cache(relay);
     mdns_relay_send_queries(relay);
@@ -204,13 +205,13 @@ static void mdns_relay_handle_query(mdns_relay *relay, mdns_packet *packet, int 
 	    continue;
 
 	if (strcmp(q->name, "_services._dns-sd._udp.local") == 0)
-	    mdns_list_append(relay->query_queue[iface], q);
+	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
 	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_airplay") == 0)
-	    mdns_list_append(relay->query_queue[iface], q);
+	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
 	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_raop") == 0)
-	    mdns_list_append(relay->query_queue[iface], q);
+	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
 	else if (q->name_segment_count == 2)
-	    mdns_list_append(relay->query_queue[iface], q);
+	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
     }
 }
 

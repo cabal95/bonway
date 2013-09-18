@@ -39,8 +39,6 @@ void mdns_srv_record_free(mdns_srv_record *rr)
 {
     assert(rr != NULL);
 
-    if (rr->name != NULL)
-	free(rr->name);
     if (rr->target_name != NULL)
 	free(rr->target_name);
 

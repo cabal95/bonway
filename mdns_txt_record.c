@@ -40,8 +40,6 @@ void mdns_txt_record_free(mdns_txt_record *rr)
 {
     assert(rr != NULL);
 
-    if (rr->name != NULL)
-	free(rr->name);
     if (rr->txt != NULL)
 	mdns_list_free(rr->txt);
 

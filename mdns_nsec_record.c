@@ -37,8 +37,6 @@ void mdns_nsec_record_free(mdns_nsec_record *rr)
 {
     assert(rr != NULL);
 
-    if (rr->name != NULL)
-	free(rr->name);
     if (rr->next_name != NULL)
 	free(rr->next_name);
 

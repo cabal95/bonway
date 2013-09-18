@@ -29,10 +29,15 @@ mdns_query *mdns_query_new(const char *name, int type, int clazz)
 
 void mdns_query_free(mdns_query *query)
 {
+    int i;
+
+
     assert(query != NULL);
 
     if (query->name != NULL)
 	free(query->name);
+    for (i = 0; i < query->name_segment_count; i++)
+	free(query->name_segment[i]);
 
     free(query);
 }
@@ -124,11 +129,29 @@ void mdns_query_set_name(mdns_query *query, const char *name)
 	}
 	else {
 	    query->name_segment[i] = strdup(tmp);
+	    i += 1;
 	    break;
 	}
     }
-    query->name_segment_count = (i + 1);
+    query->name_segment_count = i;
     free(tmp);
+}
+
+
+mdns_query *mdns_query_copy(const mdns_query *query)
+{
+    mdns_query	*copy;
+
+
+    copy = (mdns_query *)malloc(sizeof(mdns_query));
+    assert(copy != NULL);
+    bzero(copy, sizeof(mdns_query));
+
+    mdns_query_set_name(copy, query->name);
+    copy->type = query->type;
+    copy->clazz = query->clazz;
+
+    return copy;
 }
 
 

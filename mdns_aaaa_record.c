@@ -36,9 +36,6 @@ void mdns_aaaa_record_free(mdns_aaaa_record *rr)
 {
     assert(rr != NULL);
 
-    if (rr->name != NULL)
-	free(rr->name);
-
     free(rr);
 }
 

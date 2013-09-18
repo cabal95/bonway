@@ -98,6 +98,12 @@ int mdns_socket_send(mdns_socket *sock, mdns_packet *packet, int iface)
     assert(iface == -1 || sock->interfaces[iface].name != NULL);
 
     //
+    // Zero data for safety.
+    //
+    bzero(&dst, sizeof(dst));
+    bzero(cbuf, sizeof(cbuf));
+
+    //
     // Encode the packet and make sure it is valid.
     //
     data = mdns_packet_encode(packet, &sz);
@@ -143,6 +149,7 @@ int mdns_socket_send(mdns_socket *sock, mdns_packet *packet, int iface)
     // Send the message.
     //
     ret = sendmsg(sock->fd, &msg, 0);
+    free(data);
     if (ret < 0)
 	return ret;
 
