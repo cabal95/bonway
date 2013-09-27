@@ -8,6 +8,7 @@
 #define MAX_NAME_SEGMENTS	16
 
 #define MDNS_RECORD_BASE_DECL	char	*name; \
+				char	*service_name; \
 				int	type; \
 				int	clazz; \
 				int	ttl; \
@@ -34,6 +35,8 @@ extern char *mdns_record_tostring(mdns_record *rr);
 
 extern void mdns_record_set_ttl(mdns_record *rr, int ttl);
 extern void mdns_record_set_name(mdns_record *rr, const char *name);
+extern int mdns_record_is_service(mdns_record *rr);
+extern const char *mdns_record_get_service_name(mdns_record *rr);
 
 extern mdns_record *mdns_record_copy(const mdns_record *rr);
 

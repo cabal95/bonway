@@ -10,6 +10,7 @@
 #include "mdns.h"
 #include "mdns_record.h"
 #include "mdns_record_internal.h"
+#include "util.h"
 
 
 
@@ -204,7 +205,10 @@ void mdns_record_free(mdns_record *rr)
 
     assert(rr != NULL);
 
-    free(rr->name);
+    if (rr->name != NULL)
+	free(rr->name);
+    if (rr->service_name != NULL)
+	free(rr->service_name);
     for (i = 0; i < rr->name_segment_count; i++)
 	free(rr->name_segment[i]);
 
@@ -315,6 +319,47 @@ void mdns_record_set_name(mdns_record *rr, const char *name)
     }
     rr->name_segment_count = i;
     free(tmp);
+
+    //
+    // Check if this is a service.
+    //
+    if (rr->service_name != NULL) {
+	free(rr->service_name);
+	rr->service_name = NULL;
+    }
+    if (rr->name_segment_count >= 3) {
+	if (strcmp(rr->name_segment[1], "_udp") == 0 ||
+	    strcmp(rr->name_segment[1], "_tcp") == 0) {
+	    char sname[128];
+
+	    sname[0] = '\0';
+	    for (i = rr->name_segment_count - 1; i > 0; i--) {
+		if ((rr->name_segment[i])[0] == '_') {
+		    if (sname[0] != '\0')
+			strlcat(sname, ".", sizeof(sname));
+		    strlcat(sname, rr->name_segment[i], sizeof(sname));
+		}
+	    }
+
+	    rr->service_name = strdup(sname);
+	}
+    }
+}
+
+
+int mdns_record_is_service(mdns_record *rr)
+{
+    assert(rr != NULL);
+
+    return (rr->service_name != NULL);
+}
+
+
+const char *mdns_record_get_service_name(mdns_record *rr)
+{
+    assert(rr != NULL);
+
+    return rr->service_name;
 }
 
 

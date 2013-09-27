@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include "mdns_util.h"
 #include "mdns_query.h"
+#include "util.h"
 
 
 mdns_query *mdns_query_new(const char *name, int type, int clazz)
@@ -36,6 +37,8 @@ void mdns_query_free(mdns_query *query)
 
     if (query->name != NULL)
 	free(query->name);
+    if (query->service_name != NULL)
+	free(query->service_name);
     for (i = 0; i < query->name_segment_count; i++)
 	free(query->name_segment[i]);
 
@@ -135,6 +138,47 @@ void mdns_query_set_name(mdns_query *query, const char *name)
     }
     query->name_segment_count = i;
     free(tmp);
+
+    //
+    // Check if this is a service.
+    //
+    if (query->service_name != NULL) {
+	free(query->service_name);
+	query->service_name = NULL;
+    }
+    if (query->name_segment_count >= 3) {
+	if (strcmp(query->name_segment[1], "_udp") == 0 ||
+	    strcmp(query->name_segment[1], "_tcp") == 0) {
+	    char sname[128];
+
+	    sname[0] = '\0';
+	    for (i = query->name_segment_count - 1; i > 0; i--) {
+		if ((query->name_segment[i])[0] == '_') {
+		    if (sname[0] != '\0')
+			strlcat(sname, ".", sizeof(sname));
+		    strlcat(sname, query->name_segment[i], sizeof(sname));
+		}
+	    }
+
+	    query->service_name = strdup(sname);
+	}
+    }
+}
+
+
+int mdns_query_is_service(mdns_query *query)
+{
+    assert(query != NULL);
+
+    return (query->service_name != NULL);
+}
+
+
+const char *mdns_query_get_service_name(mdns_query *query)
+{
+    assert(query != NULL);
+
+    return query->service_name;
 }
 
 

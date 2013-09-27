@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "config_file.h"
 #include "mdns.h"
 #include "mdns_util.h"
 #include "mdns_socket.h"
@@ -164,6 +165,8 @@ main(int argc, char *argv[])
 	}
     }
 */
+    config_file_init();
+
     mdns_relay *relay;
 
     relay = mdns_relay_new();

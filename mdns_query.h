@@ -7,7 +7,7 @@
 
 
 typedef struct g_mdns_query {
-    char	*name;
+    char	*name, *service_name;
     int		type;
     int		clazz;
 
@@ -23,6 +23,8 @@ extern mdns_query *mdns_query_decode(const uint8_t *data, int offset, int *used)
 extern int mdns_query_encode(const mdns_query *query, uint8_t *base, int offset, size_t size, size_t *used, mdns_list *names);
 
 extern void mdns_query_set_name(mdns_query *query, const char *name);
+extern int mdns_query_is_service(mdns_query *query);
+extern const char *mdns_query_get_service_name(mdns_query *query);
 
 extern mdns_query *mdns_query_copy(const mdns_query *query);
 

@@ -11,6 +11,7 @@
 #include "mdns_packet.h"
 #include "mdns_record.h"
 #include "mdns_query.h"
+#include "config_file.h"
 
 
 
@@ -19,6 +20,9 @@ static void mdns_relay_handle_answer(mdns_relay *relay, mdns_packet *packet, int
 
 static void print_packet(mdns_relay *relay, mdns_packet *packet, int iface);
 static void check_expired_cache(mdns_relay *relay);
+
+static const config_service *allowed_service_query(const char *service_name, int iface);
+static const config_service *allowed_service_answer(const char *service_name, int iface);
 
 
 mdns_relay *mdns_relay_new()
@@ -135,7 +139,8 @@ void mdns_relay_send_answers(mdns_relay *relay)
 	}
 
 	if (packet != NULL) {
-	    mdns_socket_send(relay->socket, packet, eth1_iface);
+	    if (eth1_iface != -1)
+		mdns_socket_send(relay->socket, packet, eth1_iface);
 	    mdns_packet_free(packet);
 	}
     }
@@ -154,6 +159,8 @@ int mdns_relay_process(mdns_relay *relay, int mstimeout)
 	    if (relay->socket->interfaces[eth0_iface].name != NULL && strcmp(relay->socket->interfaces[eth0_iface].name, "eth0") == 0)
 		break;
 	}
+	if (eth0_iface == 32)
+	    eth0_iface = -1;
     }
 
     if (eth1_iface == -1) {
@@ -161,6 +168,8 @@ int mdns_relay_process(mdns_relay *relay, int mstimeout)
 	    if (relay->socket->interfaces[eth1_iface].name != NULL && strcmp(relay->socket->interfaces[eth1_iface].name, "eth1") == 0)
 		break;
 	}
+	if (eth1_iface == 32)
+	    eth1_iface = -1;
     }
 
     result = mdns_socket_recv(relay->socket, &packet, (struct sockaddr *)&from, &iface);
@@ -193,7 +202,9 @@ int mdns_relay_process(mdns_relay *relay, int mstimeout)
 
 static void mdns_relay_handle_query(mdns_relay *relay, mdns_packet *packet, int iface)
 {
-    mdns_list_item	*item;
+    const config_service	*service;
+    mdns_list_item		*item;
+    int				i;
 
 
     for (item = mdns_list_first(packet->queries);
@@ -201,24 +212,38 @@ static void mdns_relay_handle_query(mdns_relay *relay, mdns_packet *packet, int 
 	 item = mdns_list_item_next(item)) {
 	mdns_query *q = (mdns_query *)mdns_list_item_object(item);
 
-	if (iface != eth1_iface)
-	    continue;
+if (mdns_query_is_service(q))
+    printf("Service: %s\r\n", mdns_query_get_service_name(q));
+	service = allowed_service_query(mdns_query_get_service_name(q), iface);
+	if (service != NULL) {
+	    for (i = 0; i < 32; i++) {
+		if (service->in_iface[i] != 0) {
+		    mdns_list_append(relay->query_queue[service->in_iface[i]],
+				mdns_query_copy(q));
+		}
+	    }
+	}
+//	if (iface != eth1_iface)
+//	    continue;
 
-	if (strcmp(q->name, "_services._dns-sd._udp.local") == 0)
-	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
-	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_airplay") == 0)
-	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
-	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_raop") == 0)
-	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
-	else if (q->name_segment_count == 2)
-	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
+
+//	if (strcmp(q->name, "_services._dns-sd._udp.local") == 0)
+//	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
+//	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_airplay") == 0)
+//	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
+//	else if (q->name_segment_count >= 3 && strcmp(q->name_segment[1], "_tcp") == 0 && strcmp(q->name_segment[2], "_raop") == 0)
+//	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
+//	else if (q->name_segment_count == 2)
+//	    mdns_list_append(relay->query_queue[iface], mdns_query_copy(q));
     }
 }
 
 
 static void mdns_relay_handle_answer(mdns_relay *relay, mdns_packet *packet, int iface)
 {
-    mdns_list_item	*item;
+    const config_service	*service;
+    mdns_list_item		*item;
+    int				i;
 
 
     for (item = mdns_list_first(packet->answers);
@@ -226,17 +251,26 @@ static void mdns_relay_handle_answer(mdns_relay *relay, mdns_packet *packet, int
 	 item = mdns_list_item_next(item)) {
 	mdns_record *rr = (mdns_record *)mdns_list_item_object(item);
 
-	if (iface != eth0_iface)
-	    continue;
+	service = allowed_service_answer(mdns_record_get_service_name(rr), iface);
+	if (service != NULL) {
+	    for (i = 0; i < 32; i++) {
+		if (service->out_iface[i] != 0) {
+		    mdns_list_append(relay->query_queue[service->out_iface[i]],
+				mdns_record_copy(rr));
+		}
+	    }
+	}
+//	if (iface != eth0_iface)
+//	    continue;
 
-	if (strcmp(rr->name, "_services._dns-sd._udp.local") == 0)
-	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
-	else if (rr->name_segment_count >= 3 && strcmp(rr->name_segment[1], "_tcp") == 0 && strcmp(rr->name_segment[2], "_airplay") == 0)
-	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
-	else if (rr->name_segment_count >= 3 && strcmp(rr->name_segment[1], "_tcp") == 0 && strcmp(rr->name_segment[2], "_raop") == 0)
-	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
-	else if (rr->name_segment_count == 2)
-	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
+//	if (strcmp(rr->name, "_services._dns-sd._udp.local") == 0)
+//	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
+//	else if (rr->name_segment_count >= 3 && strcmp(rr->name_segment[1], "_tcp") == 0 && strcmp(rr->name_segment[2], "_airplay") == 0)
+//	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
+//	else if (rr->name_segment_count >= 3 && strcmp(rr->name_segment[1], "_tcp") == 0 && strcmp(rr->name_segment[2], "_raop") == 0)
+//	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
+//	else if (rr->name_segment_count == 2)
+//	    mdns_list_append(relay->answer_queue[iface], mdns_record_copy(rr));
     }
 }
 
@@ -323,4 +357,85 @@ static void check_expired_cache(mdns_relay *relay)
     relay->last_expire_check = mdns_time();
 }
 
+
+static const config_service *allowed_service_query(const char *service_name, int iface)
+{
+    config_service	*service;
+    mdns_list_item	*item, *titem;
+    const mdns_list	*services;
+    const char		*type;
+    int			i;
+
+
+    services = config_file_get_services();
+    for (item = mdns_list_first(services);
+	 item != NULL;
+	 item = mdns_list_item_next(item)) {
+	service = (config_service *)mdns_list_item_object(item);
+
+	//
+	// Queries come in on the outgoing interface.
+	//
+	for (i = 0; i < 32; i++) {
+	    if (service->out_iface[i] == iface)
+		break;
+	}
+	if (i == 32)
+	    continue;
+
+	//
+	// Match the name.
+	//
+	for (titem = mdns_list_first(service->type);
+	     titem != NULL;
+	     titem = mdns_list_item_next(titem)) {
+	    type = (const char *)mdns_list_item_object(titem);
+	    if (strcmp(type, service_name) == 0)
+		return service;
+	}
+    }
+
+    return NULL;
+}
+
+
+static const config_service *allowed_service_answer(const char *service_name, int iface)
+{
+    config_service	*service;
+    mdns_list_item	*item, *titem;
+    const mdns_list	*services;
+    const char		*type;
+    int			i;
+
+
+    services = config_file_get_services();
+    for (item = mdns_list_first(services);
+	 item != NULL;
+	 item = mdns_list_item_next(item)) {
+	service = (config_service *)mdns_list_item_object(item);
+
+	//
+	// Answers come in on the incoming interface.
+	//
+	for (i = 0; i < 32; i++) {
+	    if (service->in_iface[i] == iface)
+		break;
+	}
+	if (i == 32)
+	    continue;
+
+	//
+	// Match the name.
+	//
+	for (titem = mdns_list_first(service->type);
+	     titem != NULL;
+	     titem = mdns_list_item_next(titem)) {
+	    type = (const char *)mdns_list_item_object(titem);
+	    if (strcmp(type, service_name) == 0)
+		return service;
+	}
+    }
+
+    return NULL;
+}
 
