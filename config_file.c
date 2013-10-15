@@ -50,6 +50,48 @@ const mdns_list *config_file_get_services()
 }
 
 
+ mdns_list *config_file_get_used_interface_names()
+{
+    mdns_list_item	*item, *next;
+    config_service	*service;
+    mdns_list		*interfaces;
+    char		interface[IF_NAMESIZE];
+    int			i, iface;
+
+
+    interfaces = mdns_list_new(free, strdup);
+
+    for (item = mdns_list_first(_services); item != NULL; item = next) {
+	next = mdns_list_item_next(item);
+	service = (config_service *)mdns_list_item_object(item);
+
+	for (i = 0; i < 32; i++) {
+	    iface = service->client_iface[i];
+	    if (iface == 0 || if_indextoname(iface, interface) == NULL)
+		continue;
+
+	    if (mdns_list_find_matching(interfaces, interface, strcmp) != NULL)
+		continue;
+
+	    mdns_list_append(interfaces, strdup(interface));
+	}
+
+	for (i = 0; i < 32; i++) {
+	    iface = service->server_iface[i];
+	    if (iface == 0 || if_indextoname(iface, interface) == NULL)
+		continue;
+
+	    if (mdns_list_find_matching(interfaces, interface, strcmp) != NULL)
+		continue;
+
+	    mdns_list_append(interfaces, strdup(interface));
+	}
+    }
+
+    return interfaces;
+}
+
+
 
 static int cb_verify_eth(cfg_t *cfg, cfg_opt_t *opt, const char *value, void *result)
 {

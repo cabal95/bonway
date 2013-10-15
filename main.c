@@ -26,9 +26,11 @@
 int
 main(int argc, char *argv[])
 {
-
-    mdns_socket *sock;
-    mdns_packet *packet;
+    mdns_list_item	*item, *next;
+    mdns_list		*interfaces;
+    char		*interface;
+//    mdns_socket *sock;
+//    mdns_packet *packet;
 
 
 //    sock = mdns_socket_new();
@@ -38,11 +40,11 @@ main(int argc, char *argv[])
     //
     // Build and send a packet.
     //
-    packet = mdns_packet_new();
-    packet->flags = 0x8400;
+//    packet = mdns_packet_new();
+//    packet->flags = 0x8400;
 
-    struct in_addr addr;
-    inet_aton("172.16.76.100", &addr);
+//    struct in_addr addr;
+//    inet_aton("172.16.76.100", &addr);
 /*
     mdns_a_record *a = mdns_a_record_new("test.local", 120, addr);
     mdns_list_append(packet->answers, a);
@@ -66,7 +68,7 @@ main(int argc, char *argv[])
 		[NSEC IN 4500ttl daniel@Wandering Soul._teleport._tcp.local
 		TXT SRV]
 */
-
+/*
     mdns_a_record *a;
     mdns_txt_record *txt;
     mdns_ptr_record *ptr;
@@ -101,7 +103,7 @@ main(int argc, char *argv[])
     mdns_nsec_record_set_type(nsec, MDNS_RR_TYPE_SRV);
     mdns_nsec_record_set_type(nsec, MDNS_RR_TYPE_TXT);
     mdns_list_append(packet->additionals, nsec);
-
+*/
 
 //    mdns_query *q;
 //    q = mdns_query_new("_workstation._tcp.local", MDNS_RR_TYPE_PTR, MDNS_RR_CLASS_IN);
@@ -170,10 +172,12 @@ main(int argc, char *argv[])
     mdns_relay *relay;
 
     relay = mdns_relay_new();
-    mdns_socket_bind(relay->socket, "eth0", "LAN");
-    mdns_socket_bind(relay->socket, "eth1", "Public");
-    mdns_socket_bind(relay->socket, "eth3", "Church Devices");
-    mdns_socket_bind(relay->socket, "eth4", "Staff Wireless");
+    interfaces = config_file_get_used_interface_names();
+    for (item = mdns_list_first(interfaces); item != NULL; item = next) {
+	next = mdns_list_item_next(item);
+	interface = (char *)mdns_list_item_object(item);
+	mdns_socket_bind(relay->socket, interface, interface);
+    }
 
     while (1) {
 	mdns_relay_process(relay, 1000);
