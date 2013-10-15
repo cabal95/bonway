@@ -1,6 +1,12 @@
 Basic filtering for airplay is working. Need to properly assemble the NSEC
 records and A records when sending an answer packet to speed things up.
 
+When quiting de-register messages should be sent (TTL = 0) for all known
+records.
+
+When starting, probe queries should be sent to all interfaces for known
+service types that we will be relaying.
+
 --
 
 Need a short-term caching system when reading packets, we need to be able
