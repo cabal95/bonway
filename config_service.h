@@ -8,8 +8,8 @@ typedef struct g_config_service
 {
     mdns_list	*type;
 
-    int		in_iface[32];
-    int		out_iface[32];
+    int		server_iface[32];
+    int		client_iface[32];
 } config_service;
 
 

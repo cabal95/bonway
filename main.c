@@ -172,6 +172,8 @@ main(int argc, char *argv[])
     relay = mdns_relay_new();
     mdns_socket_bind(relay->socket, "eth0", "LAN");
     mdns_socket_bind(relay->socket, "eth1", "Public");
+    mdns_socket_bind(relay->socket, "eth3", "Church Devices");
+    mdns_socket_bind(relay->socket, "eth4", "Staff Wireless");
 
     while (1) {
 	mdns_relay_process(relay, 1000);

@@ -411,6 +411,8 @@ void mdns_record_copy_base(const mdns_record *rr, mdns_record *copy)
     copy->name_segment_count = rr->name_segment_count;
     for (i = 0; i < rr->name_segment_count; i++)
 	copy->name_segment[i] = strdup(rr->name_segment[i]);
+    if (rr->service_name != NULL)
+	copy->service_name = strdup(rr->service_name);
     copy->ttl_base = rr->ttl_base;
 }
 

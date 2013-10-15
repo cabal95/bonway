@@ -25,6 +25,7 @@ mdns_list_item	*mdns_list_append(mdns_list *list, void *object);
 mdns_list_item	*mdns_list_find_object(const mdns_list *list, void *object);
 void		mdns_list_remove_item(mdns_list *list, mdns_list_item *item);
 void		mdns_list_remove(mdns_list *list, void *object);
+mdns_list_item	*mdns_list_find_matching(const mdns_list *list, const void *object, void *cmp_func);
 
 #define		mdns_list_first(list)		list->head
 #define		mdns_list_last(list)		list->tail

@@ -18,8 +18,8 @@ static mdns_list *_services = NULL;
 
 static cfg_opt_t config_service_opts[] = {
     CFG_STR_LIST((char *)"type", NULL, CFGF_NODEFAULT),
-    CFG_INT_LIST_CB((char *)"indev", NULL, CFGF_NONE, &cb_verify_eth),
-    CFG_INT_LIST_CB((char *)"outdev", NULL, CFGF_NONE, &cb_verify_eth),
+    CFG_INT_LIST_CB((char *)"client", NULL, CFGF_NONE, &cb_verify_eth),
+    CFG_INT_LIST_CB((char *)"server", NULL, CFGF_NONE, &cb_verify_eth),
     CFG_END()
 };
 
@@ -92,17 +92,17 @@ int parse_config(const char *config_file)
 
 	xsize = cfg_size(sec, "type");
 	for (x = 0; x < xsize; x++) {
-	    mdns_list_append(svc->type, strdup(cfg_getnstr(sec, "type", i)));
+	    mdns_list_append(svc->type, strdup(cfg_getnstr(sec, "type", x)));
 	}
 
-	xsize = cfg_size(sec, "indev");
+	xsize = cfg_size(sec, "client");
 	for (x = 0; x < xsize && x < 32; x++) {
-	    svc->in_iface[x] = cfg_getnint(sec, "indev", x);
+	    svc->client_iface[x] = cfg_getnint(sec, "client", x);
 	}
 
-	xsize = cfg_size(sec, "outdev");
+	xsize = cfg_size(sec, "server");
 	for (x = 0; x < xsize && x < 32; x++) {
-	    svc->out_iface[x] = cfg_getnint(sec, "outdev", x);
+	    svc->server_iface[x] = cfg_getnint(sec, "server", x);
 	}
 
 	mdns_list_append(_services, svc);

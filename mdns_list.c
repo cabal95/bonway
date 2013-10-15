@@ -193,3 +193,20 @@ void mdns_list_remove(mdns_list *list, void *object)
 }
 
 
+mdns_list_item *mdns_list_find_matching(const mdns_list *list, const void *object, void *cmp_func)
+{
+    mdns_list_item	*item;
+    int			(* compare)(const void *, const void *);
+
+
+    compare = cmp_func;
+
+    for (item = list->head; item != NULL; item = item->next) {
+        if (compare(item->object, object) == 0)
+	    return item;
+    }
+
+    return NULL;
+}
+
+
