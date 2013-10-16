@@ -177,6 +177,16 @@ main(int argc, char *argv[])
 	next = mdns_list_item_next(item);
 	interface = (char *)mdns_list_item_object(item);
 	mdns_socket_bind(relay->socket, interface, interface);
+
+//	mdns_list *types;
+//        mdns_list_item *ti, *tn;
+//	char *type;
+//        types = config_file_get_service_types_for_server_interface(interface);
+//        for (ti = mdns_list_first(types); ti != NULL; ti = tn) {
+//	    tn = mdns_list_item_next(ti);
+//	    type = (char *)mdns_list_item_object(ti);
+//	    printf("%s: %s\r\n", interface, type);
+//	}
     }
 
     while (1) {

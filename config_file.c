@@ -50,7 +50,7 @@ const mdns_list *config_file_get_services()
 }
 
 
- mdns_list *config_file_get_used_interface_names()
+mdns_list *config_file_get_used_interface_names()
 {
     mdns_list_item	*item, *next;
     config_service	*service;
@@ -89,6 +89,44 @@ const mdns_list *config_file_get_services()
     }
 
     return interfaces;
+}
+
+
+mdns_list *config_file_get_service_types_for_server_interface(const char *interface)
+{
+    mdns_list_item	*item, *next, *ti, *tn;
+    config_service	*service;
+    mdns_list		*types;
+    char		interf[IF_NAMESIZE], *type;
+    int			i, iface;
+
+
+    types = mdns_list_new(free, strdup);
+
+    for (item = mdns_list_first(_services); item != NULL; item = next) {
+	next = mdns_list_item_next(item);
+	service = (config_service *)mdns_list_item_object(item);
+
+	for (i = 0; i < 32; i++) {
+	    iface = service->server_iface[i];
+	    if (iface == 0 || if_indextoname(iface, interf) == NULL)
+		continue;
+
+	    if (strcmp(interface, interf) != 0)
+		continue;
+
+	    for (ti = mdns_list_first(service->type); ti != NULL; ti = tn) {
+		tn = mdns_list_item_next(ti);
+		type = (char *)mdns_list_item_object(ti);
+		if (mdns_list_find_matching(types, type, strcmp) != NULL)
+		    continue;
+
+		mdns_list_append(types, strdup(type));
+	    }
+	}
+    }
+
+    return types;
 }
 
 
