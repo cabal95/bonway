@@ -2,25 +2,39 @@
 #define __MDNS_UTIL_H__
 
 #include <stdint.h>
-#include "mdns_list.h"
+#include <map>
 
 
 typedef uint64_t mtime_t;
 
 
-#define MDNS_NAME_MAX	255
+using namespace std;
+namespace mDNS
+{
+
+extern const int NAME_MAX;
 
 
-extern char *mdns_get_name_part(const uint8_t *base, int offset, int *used);
-extern char *mdns_get_name(const uint8_t *base, int offset, int *used);
+class util
+{
+private:
 
-extern int mdns_put_name(uint8_t *base, int offset, const char *name, size_t *used, mdns_list *names);
-extern int mdns_put_name_size_required(uint8_t *base, int offset, const char *name, mdns_list *names);
+protected:
 
-extern char *mdns_type_name(int type);
-extern char *mdns_class_name(int clazz);
+public:
+    static string get_name_part(const uint8_t *base, int offset, size_t *used);
+    static string get_name(const uint8_t *base, int offset, size_t *used);
+    static int put_name(uint8_t *base, int offset, string name, size_t *used, map<string, int> *names);
+    static int put_name_size_required(uint8_t *base, int offset, string name, map<string, int> *names);
 
-extern mtime_t mdns_time();
+    static string type_name(int type);
+    static string class_name(int clazz);
+
+    static mtime_t time();
+};
+
+
+} /* namespace */
 
 #endif /* __MDNS_UTIL_H__ */
 

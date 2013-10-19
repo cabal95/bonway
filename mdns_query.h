@@ -2,33 +2,62 @@
 #define __MDNS_QUERY_H__
 
 #include <stdint.h>
-#include "mdns_list.h"
+#include <map>
 #include "mdns_record.h"
 
 
-typedef struct g_mdns_query {
-    char	*name, *service_name;
-    int		type;
-    int		clazz;
 
-    char	*name_segment[MAX_NAME_SEGMENTS];
-    uint8_t	name_segment_count;
-} mdns_query;
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+#include "types.h"
+#include "mdns_util.h"
+//#include "mdns_query.h"
 
 
-extern mdns_query *mdns_query_new(const char *name, int type, int clazz);
-extern void mdns_query_free(mdns_query *query);
+using namespace std;
+namespace mDNS
+{
 
-extern mdns_query *mdns_query_decode(const uint8_t *data, int offset, int *used);
-extern int mdns_query_encode(const mdns_query *query, uint8_t *base, int offset, size_t size, size_t *used, mdns_list *names);
+class query
+{
+private:
+    string		name, service_name;
+    int			type, clazz;
+    StringVector	name_segment;
 
-extern void mdns_query_set_name(mdns_query *query, const char *name);
-extern int mdns_query_is_service(mdns_query *query);
-extern const char *mdns_query_get_service_name(mdns_query *query);
+protected:
+    query();
 
-extern mdns_query *mdns_query_copy(const mdns_query *query);
+public:
+    query(string name, int type, int clazz);
+    ~query();
 
-extern char *mdns_query_tostring(mdns_query *query);
+    static query decode(const uint8_t *data, int offset, int *used);
+    int encode(uint8_t *base, int offset, size_t size, size_t *used,
+	       map<string, int> *names);
+
+    void setName(string value);
+    std::string getName();
+    void setType(int value);
+    int getType();
+    void setClazz(int value);
+    int getClazz();
+
+    bool isService();
+    string getServiceName();
+
+    string toString();
+};
+
+} /* namespace */
+
 
 #endif /* __MDNS_QUERY_H__ */
 

@@ -8,46 +8,16 @@
 #include <vector>
 #include <map>
 #include "types.h"
-//#include "mdns_query.h"
+#include "mdns_util.h"
+#include "mdns_query.h"
 
 
 using namespace std;
 namespace mDNS
 {
 
-class mdns_query
-{
-private:
-    string		name, service_name;
-    int			type, clazz;
-    StringVector	name_segment;
 
-protected:
-    mdns_query();
-
-public:
-    mdns_query(string name, int type, int clazz);
-    ~mdns_query();
-
-    static mdns_query decode(const uint8_t *data, int offset, int *used);
-    int encode(uint8_t *base, int offset, size_t size, size_t *used,
-	       map<string, int> &names);
-
-    void setName(string value);
-    std::string getName();
-    void setType(int value);
-    int getType();
-    void setClazz(int value);
-    int getClazz();
-
-    bool isService();
-    string getServiceName();
-
-    string toString();
-};
-
-
-mdns_query::mdns_query()
+query::query()
 {
     setName("");
     setType(0);
@@ -55,7 +25,7 @@ mdns_query::mdns_query()
 }
 
 
-mdns_query::mdns_query(string pname, int ptype, int pclazz)
+query::query(string pname, int ptype, int pclazz)
 {
     setName(pname);
     setType(ptype);
@@ -63,23 +33,23 @@ mdns_query::mdns_query(string pname, int ptype, int pclazz)
 }
 
 
-mdns_query::~mdns_query()
+query::~query()
 {
 }
 
 
-mdns_query mdns_query::decode(const uint8_t *data, int offset, int *used)
+query query::decode(const uint8_t *data, int offset, int *used)
 {
-    mdns_query	query;
     uint16_t	v16;
-    char	*name;
-    int		off = offset, u;
+    string	name;
+    size_t	u;
+    query	query;
+    int		off = offset;
 
 
-    name = mdns_get_name(data, off, &u);
+    name = util::get_name(data, off, &u);
     off += u;
     query.setName(name);
-    free(name);
 
     memcpy(&v16, data + off, sizeof(v16));
     query.setType(ntohs(v16));
@@ -96,8 +66,8 @@ mdns_query mdns_query::decode(const uint8_t *data, int offset, int *used)
 }
 
 
-int mdns_query::encode(uint8_t *base, int offset, size_t size, size_t *used,
-		       map<string, int> &names)
+int query::encode(uint8_t *base, int offset, size_t size, size_t *used,
+		       map<string, int> *names)
 {
     uint16_t	v16;
     size_t	u;
@@ -107,7 +77,7 @@ int mdns_query::encode(uint8_t *base, int offset, size_t size, size_t *used,
     if ((off + name.length() + 2 + 2 + 2) > size)
 	return -ENOMEM;
 
-    if (mdns_put_name(base, off, name.c_str(), &u, names))
+    if (util::put_name(base, off, name, &u, names))
 	return -ENOMEM;
     off += u;
 
@@ -126,7 +96,7 @@ int mdns_query::encode(uint8_t *base, int offset, size_t size, size_t *used,
 }
 
 
-void mdns_query::setName(string value)
+void query::setName(string value)
 {
     stringstream	ss(value);
     string		item;
@@ -152,49 +122,49 @@ void mdns_query::setName(string value)
 }
 
 
-string mdns_query::getName()
+string query::getName()
 {
     return name;
 }
 
 
-void mdns_query::setType(int value)
+void query::setType(int value)
 {
     type = value;
 }
 
 
-int mdns_query::getType()
+int query::getType()
 {
     return type;
 }
 
 
-void mdns_query::setClazz(int value)
+void query::setClazz(int value)
 {
     clazz = value;
 }
 
 
-int mdns_query::getClazz()
+int query::getClazz()
 {
     return clazz;
 }
 
 
-bool mdns_query::isService()
+bool query::isService()
 {
     return (service_name != "");
 }
 
 
-string mdns_query::getServiceName()
+string query::getServiceName()
 {
     return service_name;
 }
 
 
-string mdns_query::toString()
+string query::toString()
 {
     ostringstream	ss;
 
