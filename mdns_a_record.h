@@ -20,6 +20,7 @@ protected:
                   std::map<std::string, int> *names);
     
 public:
+    a_record(std::string name, int clazz, int ttl, struct in_addr address);
 
     void setAddress(struct in_addr address);
     struct in_addr	getAddress();
