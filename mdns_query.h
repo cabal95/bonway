@@ -44,7 +44,7 @@ public:
 	       map<string, int> *names);
 
     void setName(string value);
-    std::string getName();
+    string getName();
     void setType(int value);
     int getType();
     void setClazz(int value);

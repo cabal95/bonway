@@ -84,7 +84,7 @@ string util::get_name(const uint8_t *base, int offset, size_t *used)
 }
 
 
-int put_name(uint8_t *base, int offset, string name, size_t *used, map<string, int> *names)
+int util::put_name(uint8_t *base, int offset, string name, size_t *used, map<string, int> *names)
 {
     string	n = name, s;
     size_t      len, u = 0;
@@ -147,7 +147,7 @@ int put_name(uint8_t *base, int offset, string name, size_t *used, map<string, i
 }
 
 
-int put_name_size_required(uint8_t *base, int offset, string name, map<string, int> *names)
+int util::put_name_size_required(uint8_t *base, int offset, string name, map<string, int> *names)
 {
     string	n = name, s;
     size_t      len, u = 0;
@@ -188,7 +188,7 @@ int put_name_size_required(uint8_t *base, int offset, string name, map<string, i
 }
 
 
-string type_name(int type)
+string util::type_name(int type)
 {
     char	unknown[8];
 
@@ -216,7 +216,7 @@ string type_name(int type)
 }
 
 
-string class_name(int clazz)
+string util::class_name(int clazz)
 {
     char	unknown[8];
 
@@ -232,7 +232,7 @@ string class_name(int clazz)
 }
 
 
-mtime_t time()
+mtime_t util::time()
 {
     struct timespec	ts;
 

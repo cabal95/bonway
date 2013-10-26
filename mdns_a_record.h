@@ -2,22 +2,31 @@
 #define __MDNS_A_RECORD_H__
 
 #include <arpa/inet.h>
+#include <string>
 #include "mdns_record.h"
 
+namespace mDNS {
 
-typedef struct g_mdns_a_record {
-    MDNS_RECORD_BASE_DECL
+class a_record : public record
+{
+private:
+    struct in_addr	m_address;
 
-    struct in_addr	address;
-} mdns_a_record;
+protected:
+    a_record(std::string name, int clazz, int ttl);
+    void parse(const uint8_t *base, int offset, int dlen);
+    
+public:
 
+    void setAddress(struct in_addr address);
+    struct in_addr	getAddress();
 
-extern mdns_a_record *mdns_a_record_new(const char *name, int ttl,
-		struct in_addr address);
-extern void mdns_a_record_free(mdns_a_record *rr);
+    std::string toString();
 
-extern char *mdns_a_record_tostring(mdns_a_record *rr);
+    friend class record;
+};
 
+} /* namespace mDNS */
 
 #endif /* __MDNS_A_RECORD_H__ */
 

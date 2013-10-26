@@ -2,43 +2,47 @@
 #define __MDNS_RECORD_H__
 
 #include <stdint.h>
-#include "mdns_list.h"
+#include <map>
+#include <string>
+#include "types.h"
 
 
-#define MAX_NAME_SEGMENTS	16
+namespace mDNS {
 
-#define MDNS_RECORD_BASE_DECL	char	*name; \
-				char	*service_name; \
-				int	type; \
-				int	clazz; \
-				int	ttl; \
-				char	*name_segment[MAX_NAME_SEGMENTS]; \
-				uint8_t	name_segment_count; \
-				time_t	ttl_base;
+class record
+{
+private:
+    std::string		m_name, m_service_name;
+    int			m_type, m_clazz;
+    StringVector	m_name_segment;
+    int			m_ttl;
+    time_t		m_ttl_base;
 
-//
-// This is a generic "abstract" structure that can be used for
-// determining the correct struct type to cast to.
-//
-typedef struct g_mdns_record {
-    MDNS_RECORD_BASE_DECL
-} mdns_record;
+protected:
+    record(std::string name, int type, int clazz, int ttl);
 
+public:
+    static record *decode(const uint8_t *data, int offset, int *used);
 
-extern mdns_record *mdns_record_decode(const uint8_t *data, int offset, int *used);
-extern void mdns_record_free(mdns_record *rr);
+    int encode(uint8_t *base, int offset, size_t size, size_t *used,
+               std::map<std::string, int> *names);
 
-extern int mdns_record_encode(const mdns_record *rr, uint8_t *base,
-		int offset, size_t size, size_t *used, mdns_list *names);
+    void setName(std::string value);
+    std::string getName();
+    void setType(int value);
+    int getType();
+    void setClass(int value);
+    int getClass();
+    void setTTL(int value);
+    int getTTL();
 
-extern char *mdns_record_tostring(mdns_record *rr);
+    bool isService();
+    std::string getServiceName();
 
-extern void mdns_record_set_ttl(mdns_record *rr, int ttl);
-extern void mdns_record_set_name(mdns_record *rr, const char *name);
-extern int mdns_record_is_service(mdns_record *rr);
-extern const char *mdns_record_get_service_name(mdns_record *rr);
+    virtual std::string toString();
+};
 
-extern mdns_record *mdns_record_copy(const mdns_record *rr);
+}
 
 #endif /* __MDNS_RECORD_H__ */
 
