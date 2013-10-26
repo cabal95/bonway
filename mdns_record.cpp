@@ -85,7 +85,7 @@ int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
     uint16_t	type, clazz, dlen;
     uint32_t	ttl;
     size_t	u;
-    int		off = offset;
+    int		off = offset, ret;
 
 
     if (util::put_name(base, off, m_name, &u, names))
@@ -108,8 +108,16 @@ int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
     off += sizeof(dlen);
 
     switch (m_type) {
-	cout << "Unknown record type " << util::type_name(m_type) << " during record encode.\r\n";
-	return -EINVAL;
+	case RR_TYPE_A:
+	    ret = ((a_record *)this)->serialize(base, off, size, &u, names);
+	    if (ret)
+		return ret;
+
+	    break;
+
+	default:
+	    cout << "Unknown record type " << util::type_name(m_type) << " during record encode.\r\n";
+	    return -EINVAL;
     }
 
     //
