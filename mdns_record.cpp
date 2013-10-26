@@ -13,6 +13,7 @@
 #include "mdns_a_record.h"
 #include "mdns_aaaa_record.h"
 #include "mdns_nsec_record.h"
+#include "mdns_ptr_record.h"
 
 
 using namespace std;
@@ -82,6 +83,13 @@ record *record::decode(const uint8_t *data, int offset, int *used)
 	    break;
 	}
 
+	case RR_TYPE_PTR:
+	{
+	    rr = new ptr_record(name, clazz, ttl);
+	    rr->parse(data, off, dlen);
+	    break;
+	}
+
 	default:
 	    cout << "Unknown record type " << util::type_name(type) << ".\r\n";
 	    break;
@@ -143,6 +151,15 @@ int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
 	}
 
 	case RR_TYPE_NSEC:
+	{
+	    ret = this->serialize(base, off, size, &u, names);
+	    if (ret)
+		return ret;
+
+	    break;
+	}
+
+	case RR_TYPE_PTR:
 	{
 	    ret = this->serialize(base, off, size, &u, names);
 	    if (ret)

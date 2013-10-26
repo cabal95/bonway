@@ -1,22 +1,31 @@
 #ifndef __MDNS_PTR_RECORD_H__
 #define __MDNS_PTR_RECORD_H__
 
-#include <arpa/inet.h>
 #include "mdns_record.h"
 
 
-typedef struct g_mdns_ptr_record {
-    MDNS_RECORD_BASE_DECL
+namespace mDNS {
 
-    char	*target_name;
-} mdns_ptr_record;
+class ptr_record : public record
+{
+private:
+    std::string	m_target_name;
 
+protected:
+    ptr_record(std::string name, int clazz, int ttl);
+    void parse(const uint8_t *base, int offset, int dlen);
+    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
+               std::map<std::string, int> *names);
 
-extern mdns_ptr_record *mdns_ptr_record_new(const char *name, int ttl,
-		const char *target_name);
-extern void mdns_ptr_record_free(mdns_ptr_record *rr);
+public:
+    ptr_record(std::string name, int clazz, int ttl, std::string target_name);
 
-extern char *mdns_ptr_record_tostring(mdns_ptr_record *rr);
+    std::string toString();
+
+    friend class record;
+};
+
+} /* namespace mDNS */
 
 #endif /* __MDNS_PTR_RECORD_H__ */
 

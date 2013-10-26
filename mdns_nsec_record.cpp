@@ -11,14 +11,14 @@ namespace mDNS {
 
 
 nsec_record::nsec_record(string name, int clazz, int ttl)
-                        : record(name, RR_TYPE_A, clazz, ttl)
+                        : record(name, RR_TYPE_NSEC, clazz, ttl)
 {
     memset(m_bitmap, 0, sizeof(m_bitmap));
 }
 
 
 nsec_record::nsec_record(string name, int clazz, int ttl, string next_name)
-                        : record(name, RR_TYPE_A, clazz, ttl)
+                        : record(name, RR_TYPE_NSEC, clazz, ttl)
 {
     memset(m_bitmap, 0, sizeof(m_bitmap));
     m_next_name = next_name;
