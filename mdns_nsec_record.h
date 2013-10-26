@@ -1,26 +1,35 @@
 #ifndef __MDNS_NSEC_RECORD_H__
 #define __MDNS_NSEC_RECORD_H__
 
-#include <arpa/inet.h>
 #include "mdns_record.h"
 
 
-typedef struct g_mdns_nsec_record {
-    MDNS_RECORD_BASE_DECL
+namespace mDNS {
 
-    char	*next_name;
-    uint8_t	bitmap[32];
-} mdns_nsec_record;
+class nsec_record : public record
+{
+private:
+    std::string	m_next_name;
+    bool	m_bitmap[256 / 8];
 
+protected:
+    nsec_record(std::string name, int clazz, int ttl);
+    void parse(const uint8_t *base, int offset, int dlen);
+    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
+               std::map<std::string, int> *names);
 
-extern mdns_nsec_record *mdns_nsec_record_new(const char *name, int ttl,
-		const char *next_name);
-extern void mdns_nsec_record_free(mdns_nsec_record *rr);
+public:
+    nsec_record(std::string name, int clazz, int ttl, std::string next_name);
 
-extern int mdns_nsec_record_has_type(const mdns_nsec_record *rr, int type);
-extern void mdns_nsec_record_set_type(mdns_nsec_record *rr, int type);
+    bool hasType(int type);
+    void setType(int type, bool state = true);
 
-extern char *mdns_nsec_record_tostring(mdns_nsec_record *rr);
+    std::string toString();
+
+    friend class record;
+};
+
+} /* namespace mDNS */
 
 #endif /* __MDNS_NSEC_RECORD_H__ */
 

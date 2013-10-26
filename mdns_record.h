@@ -20,6 +20,10 @@ private:
 
 protected:
     record(std::string name, int type, int clazz, int ttl);
+    virtual void parse(const uint8_t *base, int offset, int dlen) = 0;
+    virtual int serialize(uint8_t *base, int offset, size_t size,
+                          size_t *used, std::map<std::string, int> *names) = 0;
+
 
 public:
     static record *decode(const uint8_t *data, int offset, int *used);

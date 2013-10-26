@@ -11,6 +11,8 @@
 #include "mdns_util.h"
 #include "mdns_record.h"
 #include "mdns_a_record.h"
+#include "mdns_aaaa_record.h"
+#include "mdns_nsec_record.h"
 
 
 using namespace std;
@@ -62,7 +64,21 @@ record *record::decode(const uint8_t *data, int offset, int *used)
 	case RR_TYPE_A:
 	{
 	    rr = new a_record(name, clazz, ttl);
-	    ((a_record *)rr)->parse(data, off, dlen);
+	    rr->parse(data, off, dlen);
+	    break;
+	}
+
+	case RR_TYPE_AAAA:
+	{
+	    rr = new aaaa_record(name, clazz, ttl);
+	    rr->parse(data, off, dlen);
+	    break;
+	}
+
+	case RR_TYPE_NSEC:
+	{
+	    rr = new nsec_record(name, clazz, ttl);
+	    rr->parse(data, off, dlen);
 	    break;
 	}
 
@@ -109,11 +125,31 @@ int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
 
     switch (m_type) {
 	case RR_TYPE_A:
-	    ret = ((a_record *)this)->serialize(base, off, size, &u, names);
+	{
+	    ret = this->serialize(base, off, size, &u, names);
 	    if (ret)
 		return ret;
 
 	    break;
+	}
+
+	case RR_TYPE_AAAA:
+	{
+	    ret = this->serialize(base, off, size, &u, names);
+	    if (ret)
+		return ret;
+
+	    break;
+	}
+
+	case RR_TYPE_NSEC:
+	{
+	    ret = this->serialize(base, off, size, &u, names);
+	    if (ret)
+		return ret;
+
+	    break;
+	}
 
 	default:
 	    cout << "Unknown record type " << util::type_name(m_type) << " during record encode.\r\n";

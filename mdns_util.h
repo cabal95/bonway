@@ -30,6 +30,8 @@ public:
     static string type_name(int type);
     static string class_name(int clazz);
 
+    static uint8_t bit_flip(uint8_t value);
+
     static mtime_t time();
 };
 
