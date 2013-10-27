@@ -1,23 +1,37 @@
 #ifndef __MDNS_TXT_RECORD_H__
 #define __MDNS_TXT_RECORD_H__
 
-#include <arpa/inet.h>
 #include "mdns_record.h"
-#include "mdns_list.h"
+#include "types.h"
 
 
-typedef struct g_mdns_txt_record {
-    MDNS_RECORD_BASE_DECL
+namespace mDNS {
 
-    mdns_list	*txt;
-} mdns_txt_record;
+class txt_record : public record
+{
+private:
+    StringList	m_text;
 
+protected:
+    txt_record(std::string name, int clazz, int ttl);
+    void parse(const uint8_t *base, int offset, int dlen);
+    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
+               std::map<std::string, int> *names);
 
-extern mdns_txt_record *mdns_txt_record_new(const char *name, int ttl,
-		const mdns_list *txt);
-extern void mdns_txt_record_free(mdns_txt_record *rr);
+public:
+    txt_record(std::string name, int clazz, int ttl, StringList text);
+    txt_record(std::string name, int clazz, int ttl, std::string text);
 
-extern char *mdns_txt_record_tostring(mdns_txt_record *rr);
+    void addText(std::string text);
+    bool hasText(std::string text);
+    StringList getText();
+
+    std::string toString();
+
+    friend class record;
+};
+
+} /* namespace mDNS */
 
 #endif /* __MDNS_TXT_RECORD_H__ */
 

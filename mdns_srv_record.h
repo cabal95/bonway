@@ -1,25 +1,48 @@
 #ifndef __MDNS_SRV_RECORD_H__
 #define __MDNS_SRV_RECORD_H__
 
-#include <arpa/inet.h>
+#include <stdint.h>
 #include "mdns_record.h"
 
 
-typedef struct g_mdns_srv_record {
-    MDNS_RECORD_BASE_DECL
+namespace mDNS {
 
-    uint16_t	priority;
-    uint16_t	weight;
-    uint16_t	port;
-    char	*target_name;
-} mdns_srv_record;
+class srv_record : public record
+{
+private:
+    uint16_t	m_priority;
+    uint16_t	m_weight;
+    uint16_t	m_port;
+    std::string	m_target_name;
 
+protected:
+    srv_record(std::string name, int clazz, int ttl);
+    void parse(const uint8_t *base, int offset, int dlen);
+    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
+               std::map<std::string, int> *names);
 
-extern mdns_srv_record *mdns_srv_record_new(const char *name, int ttl,
-		const char *target_name, uint16_t port);
-extern void mdns_srv_record_free(mdns_srv_record *rr);
+public:
+    srv_record(std::string name, int clazz, int ttl, std::string target_name,
+               uint16_t port);
 
-extern char *mdns_srv_record_tostring(mdns_srv_record *rr);
+    void setPriority(uint16_t priority);
+    uint16_t getPriority();
 
-#endif /* __MDNS_SRV_RECORD_H__ */
+    void setWeight(uint16_t weight);
+    uint16_t getWeight();
+
+    void setPort(uint16_t port);
+    uint16_t getPort();
+
+    void setTargetName(std::string target_name);
+    std::string getTargetName();
+
+    std::string toString();
+
+    friend class record;
+};
+
+} /* namespace mDNS */
+
+#endif /* __MDNS_PTR_RECORD_H__ */
 
