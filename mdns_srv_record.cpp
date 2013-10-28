@@ -11,9 +11,11 @@ using namespace std;
 namespace mDNS {
 
 
-srv_record::srv_record(string name, int clazz, int ttl)
-                      : record(name, RR_TYPE_SRV, clazz, ttl)
+srv_record::srv_record()
+                      : record()
 {
+    setType(RR_TYPE_SRV);
+    setClass(RR_CLASS_IN);
 }
 
 
@@ -28,69 +30,29 @@ srv_record::srv_record(string name, int clazz, int ttl, string target_name,
 }
 
 
-void srv_record::parse(const uint8_t *base, int offset, int dlen)
+void srv_record::parse(DataBuffer &data, size_t datalen)
 {
-    uint16_t	v16;
-    int		off = offset;
-
-
     // TODO error check dlen
-    memcpy(&v16, base + off, sizeof(v16));
-    off += sizeof(v16);
-    m_priority = ntohs(v16);
-
-    memcpy(&v16, base + off, sizeof(v16));
-    off += sizeof(v16);
-    m_weight = ntohs(v16);
-
-    memcpy(&v16, base + off, sizeof(v16));
-    off += sizeof(v16);
-    m_port = ntohs(v16);
-
-    m_target_name = util::get_name(base, off, NULL);
+    m_priority = ntohs(data.readInt16());
+    m_weight = ntohs(data.readInt16());
+    m_port = ntohs(data.readInt16());
+    m_target_name = util::get_name(data);
 }
 
 
-int srv_record::serialize(uint8_t *base, int offset, size_t size, size_t *used,
-                          map<string, int> *names)
+int srv_record::serialize(DataBuffer &data, map<string, int> *names)
 {
-    uint16_t	v16;
-    size_t	u;
-    int		off = offset, ret, namelen;
-
-
-    //
-    // Make sure there is room in the buffer.
-    //
-    namelen = util::put_name_size_required(base, off, m_target_name, names);
-    if ((size_t)(off + namelen + (3 * sizeof(v16))) > size)
-	return -ENOMEM;
-
     //
     // Encode the integer values.
     //
-    v16 = htons(m_priority);
-    memcpy(base + off, &v16, sizeof(v16));
-    off += sizeof(v16);
-
-    v16 = htons(m_weight);
-    memcpy(base + off, &v16, sizeof(v16));
-    off += sizeof(v16);
-
-    v16 = htons(m_port);
-    memcpy(base + off, &v16, sizeof(v16));
-    off += sizeof(v16);
+    data.putInt16(htons(m_priority));
+    data.putInt16(htons(m_weight));
+    data.putInt16(htons(m_port));
 
     //
     // Store the target name.
     //
-    ret = util::put_name(base, off, m_target_name, &u, names);
-    if (ret != 0)
-	return ret;
-    off += u;
-
-    if (used != NULL)
-	*used = (off - offset);
+    util::put_name(data, m_target_name, names);
 
     return 0;
 }

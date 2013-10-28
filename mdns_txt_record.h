@@ -13,10 +13,9 @@ private:
     StringList	m_text;
 
 protected:
-    txt_record(std::string name, int clazz, int ttl);
-    void parse(const uint8_t *base, int offset, int dlen);
-    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
-               std::map<std::string, int> *names);
+    txt_record();
+    void parse(DataBuffer &data, size_t datalen);
+    int serialize(DataBuffer &data, std::map<std::string, int> *names);
 
 public:
     txt_record(std::string name, int clazz, int ttl, StringList text);

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <map>
 #include <string>
+#include "databuffer.h"
 #include "types.h"
 
 
@@ -19,17 +20,17 @@ private:
     time_t		m_ttl_base;
 
 protected:
+    record();
     record(std::string name, int type, int clazz, int ttl);
-    virtual void parse(const uint8_t *base, int offset, int dlen) = 0;
-    virtual int serialize(uint8_t *base, int offset, size_t size,
-                          size_t *used, std::map<std::string, int> *names) = 0;
+    virtual void parse(DataBuffer &data, size_t datalen) = 0;
+    virtual int serialize(DataBuffer &data,
+                          std::map<std::string, int> *names) = 0;
 
 
 public:
-    static record *decode(const uint8_t *data, int offset, int *used);
+    static record *decode(DataBuffer &data);
 
-    int encode(uint8_t *base, int offset, size_t size, size_t *used,
-               std::map<std::string, int> *names);
+    int encode(DataBuffer &data, std::map<std::string, int> *names);
 
     void setName(std::string value);
     std::string getName();
@@ -45,6 +46,8 @@ public:
 
     virtual std::string toString();
 };
+
+typedef std::vector<record *> RecordVector;
 
 }
 

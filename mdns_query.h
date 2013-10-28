@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <vector>
 #include "mdns_record.h"
 
 
@@ -18,7 +19,7 @@
 #include <map>
 #include "types.h"
 #include "mdns_util.h"
-//#include "mdns_query.h"
+#include "databuffer.h"
 
 
 using namespace std;
@@ -39,9 +40,8 @@ public:
     query(string name, int type, int clazz);
     ~query();
 
-    static query decode(const uint8_t *data, int offset, int *used);
-    int encode(uint8_t *base, int offset, size_t size, size_t *used,
-	       map<string, int> *names);
+    static query decode(DataBuffer &data);
+    int encode(DataBuffer &data, map<string, int> *names);
 
     void setName(string value);
     string getName();
@@ -56,8 +56,9 @@ public:
     string toString();
 };
 
-} /* namespace */
+typedef std::vector<query> QueryVector;
 
+} /* namespace mDNS */
 
 #endif /* __MDNS_QUERY_H__ */
 

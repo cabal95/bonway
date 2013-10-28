@@ -10,9 +10,11 @@ using namespace std;
 namespace mDNS {
 
 
-nsec_record::nsec_record(string name, int clazz, int ttl)
-                        : record(name, RR_TYPE_NSEC, clazz, ttl)
+nsec_record::nsec_record()
+                        : record()
 {
+    setType(RR_TYPE_NSEC);
+    setClass(RR_CLASS_IN);
     memset(m_bitmap, 0, sizeof(m_bitmap));
 }
 
@@ -25,32 +27,26 @@ nsec_record::nsec_record(string name, int clazz, int ttl, string next_name)
 }
 
 
-void nsec_record::parse(const uint8_t *base, int offset, int dlen)
+void nsec_record::parse(DataBuffer &data, size_t datalen)
 {
-    size_t	u;
-    int		used = 0, i, count;
+    int	i, count;
 
 
     // TODO error check dlen
-    m_next_name = util::get_name(base, offset, &u);
-    used += u;
+    m_next_name = util::get_name(data);
 
-    if (base[offset + used] == 0) {
-	used += 1;
-	count = base[offset + used];
-	used += 1;
+    if (data.readInt8() == 0) {
+	count = data.readInt8();
 	for (i = 0; i < count; i++) {
-	    m_bitmap[i] = util::bit_flip(base[offset + used + i]);
+	    m_bitmap[i] = util::bit_flip(data.readInt8());
 	}
     }
 }
 
 
-int nsec_record::serialize(uint8_t *base, int offset, size_t size, size_t *used,
-       	                   map<string, int> *names)
+int nsec_record::serialize(DataBuffer &data, map<string, int> *names)
 {
-    size_t	u;
-    int		off = offset, ret, i, count, namelen;
+    int	i, count;
 
 
     //
@@ -63,33 +59,18 @@ int nsec_record::serialize(uint8_t *base, int offset, size_t size, size_t *used,
     }
 
     //
-    // Make sure there is room in the buffer.
-    //
-    namelen = util::put_name_size_required(base, off, m_next_name, names);
-    if ((size_t)(offset + namelen + count + 2) > size)
-	return -ENOMEM;
-
-    //
     // Store the next name.
     //
-    ret = util::put_name(base, off, m_next_name, &u, names);
-    if (ret != 0)
-	return ret;
-    off += u;
+    util::put_name(data, m_next_name, names);
 
     //
     // Store the bitmap data.
     //
-    base[off] = 0;
-    base[off + 1] = count;
-    off += 2;
+    data.putInt8(0);
+    data.putInt8(count);
     for (i = 0; i < count; i++) {
-	base[off + i] = util::bit_flip(m_bitmap[i]);
+	data.putInt8(util::bit_flip(m_bitmap[i]));
     }
-    off += i;
-
-    if (used != NULL)
-	*used = (off - offset);
 
     return 0;
 }

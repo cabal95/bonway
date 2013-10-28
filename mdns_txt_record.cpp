@@ -11,9 +11,11 @@ using namespace std;
 namespace mDNS {
 
 
-txt_record::txt_record(string name, int clazz, int ttl)
-                      : record(name, RR_TYPE_TXT, clazz, ttl)
+txt_record::txt_record()
+                      : record()
 {
+    setType(RR_TYPE_TXT);
+    setClass(RR_CLASS_IN);
 }
 
 
@@ -31,20 +33,19 @@ txt_record::txt_record(string name, int clazz, int ttl, string text)
 }
 
 
-void txt_record::parse(const uint8_t *base, int offset, int dlen)
+void txt_record::parse(DataBuffer &data, size_t datalen)
 {
     size_t	u, used = 0;
     char	text[256];
 
 
     // TODO error check dlen
-    if (dlen == 1 && *(base + offset) == 0)
+    if (datalen == 1 && data.readInt8() == 0)
 	return;
 
-    while (used < (size_t)dlen) {
-	u = base[offset + used];
-	memcpy(text, base + offset + used + 1, u);
-	used += (u + 1);
+    while (used < datalen) {
+	u = data.readInt8();
+	memcpy(text, data.readBytes(u), u);
 	text[u] = '\0';
 
 	m_text.push_back(text);
@@ -52,50 +53,27 @@ void txt_record::parse(const uint8_t *base, int offset, int dlen)
 }
 
 
-int txt_record::serialize(uint8_t *base, int offset, size_t size, size_t *used,
-                          map<string, int> *names)
+int txt_record::serialize(DataBuffer &data, map<string, int> *names)
 {
     StringList::iterator	iter;
-    size_t			needed = 0;
-    int				off = offset, len;
+    int				len;
 
-
-    //
-    // Determine how much space we need.
-    //
-    for (iter = m_text.begin(); iter != m_text.end(); iter++) {
-	len = (*iter).length();
-	needed += (len + 1);
-    }
-    if (needed == 0)
-	needed = 1;
-
-    //
-    // Make sure there is room in the buffer.
-    //
-    if ((size_t)(offset + needed) > size)
-	return -ENOMEM;
 
     //
     // Store the text strings.
     //
     for (iter = m_text.begin(); iter != m_text.end(); iter++) {
 	len = (*iter).length();
-	base[off++] = (uint8_t)len;
-	memcpy(base + off, (*iter).c_str(), len);
-	off += len;
+	data.putInt8(len);
+	data.putBytes((*iter).c_str(), len);
     }
 
     //
     // If there are no recods, make the length 1 with a NULL.
     //
-    if (off == offset) {
-	base[off] = 0;
-	off += 1;
+    if (m_text.size() == 0) {
+	data.putInt8(0);
     }
-
-    if (used != NULL)
-	*used = (off - offset);
 
     return 0;
 }

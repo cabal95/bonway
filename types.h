@@ -8,6 +8,7 @@
 
 typedef std::vector<std::string> StringVector;
 typedef std::vector<std::string>::iterator StringVectorIter;
+
 typedef std::list<std::string> StringList;
 typedef std::list<std::string>::iterator StringListIter;
 

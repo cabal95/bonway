@@ -12,10 +12,10 @@ private:
     std::string	m_target_name;
 
 protected:
-    ptr_record(std::string name, int clazz, int ttl);
-    void parse(const uint8_t *base, int offset, int dlen);
-    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
-               std::map<std::string, int> *names);
+    ptr_record();
+    void parse(DataBuffer &data, size_t datalen);
+    int serialize(DataBuffer &data,
+                  std::map<std::string, int> *names);
 
 public:
     ptr_record(std::string name, int clazz, int ttl, std::string target_name);

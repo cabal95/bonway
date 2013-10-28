@@ -38,59 +38,26 @@ query::~query()
 }
 
 
-query query::decode(const uint8_t *data, int offset, int *used)
+query query::decode(DataBuffer &data)
 {
-    uint16_t	v16;
-    string	name;
-    size_t	u;
     query	query;
-    int		off = offset;
 
 
-    name = util::get_name(data, off, &u);
-    off += u;
-    query.setName(name);
-
-    memcpy(&v16, data + off, sizeof(v16));
-    query.setType(ntohs(v16));
-    off += sizeof(v16);
-
-    memcpy(&v16, data + off, sizeof(v16));
-    query.setClazz((ntohs(v16) & ~0x8000));
-    off += sizeof(v16);
-
-    if (used != NULL)
-	*used = (off - offset);
+    query.setName(util::get_name(data));
+    query.setType(ntohs(data.readInt16()));
+    query.setClazz(ntohs(data.readInt16()) & ~0x8000);
 
     return query;
 }
 
 
-int query::encode(uint8_t *base, int offset, size_t size, size_t *used,
-		       map<string, int> *names)
+int query::encode(DataBuffer &data, map<string, int> *names)
 {
-    uint16_t	v16;
-    size_t	u;
-    int		off = offset;
-
-
-    if ((off + name.length() + 2 + 2 + 2) > size)
+    if (util::put_name(data, name, names))
 	return -ENOMEM;
 
-    if (util::put_name(base, off, name, &u, names))
-	return -ENOMEM;
-    off += u;
-
-    v16 = htons(type);
-    memcpy(base + off, &v16, sizeof(v16));
-    off += sizeof(v16);
-
-    v16 = htons(clazz);
-    memcpy(base + off, &v16, sizeof(v16));
-    off += sizeof(v16);
-
-    if (used != NULL)
-	*used = (off - offset);
+    data.putInt16(htons(type));
+    data.putInt16(htons(clazz));
 
     return 0;
 }

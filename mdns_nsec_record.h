@@ -13,10 +13,10 @@ private:
     bool	m_bitmap[256 / 8];
 
 protected:
-    nsec_record(std::string name, int clazz, int ttl);
-    void parse(const uint8_t *base, int offset, int dlen);
-    int serialize(uint8_t *base, int offset, size_t size, size_t *used,
-               std::map<std::string, int> *names);
+    nsec_record();
+    void parse(DataBuffer &data, size_t datalen);
+    int serialize(DataBuffer &data,
+                  std::map<std::string, int> *names);
 
 public:
     nsec_record(std::string name, int clazz, int ttl, std::string next_name);

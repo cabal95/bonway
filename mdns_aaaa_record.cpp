@@ -10,9 +10,11 @@ using namespace std;
 namespace mDNS {
 
 
-aaaa_record::aaaa_record(string name, int clazz, int ttl)
-                        : record(name, RR_TYPE_AAAA, clazz, ttl)
+aaaa_record::aaaa_record()
+                        : record()
 {
+    setType(RR_TYPE_AAAA);
+    memset(&m_address, 0, sizeof(m_address));
 }
 
 
@@ -24,23 +26,16 @@ aaaa_record::aaaa_record(string name, int clazz, int ttl,
 }
 
 
-void aaaa_record::parse(const uint8_t *base, int offset, int dlen)
+void aaaa_record::parse(DataBuffer &data, size_t datalen)
 {
     // TODO error check dlen
-    memcpy(&m_address, base + offset, sizeof(m_address));
+    memcpy(&m_address, data.readBytes(sizeof(m_address)), sizeof(m_address));
 }
 
 
-int aaaa_record::serialize(uint8_t *base, int offset, size_t size,
-                           size_t *used, map<string, int> *names)
+int aaaa_record::serialize(DataBuffer &data, map<string, int> *names)
 {
-    if ((offset + sizeof(m_address)) > size)
-	return -ENOMEM;
-
-    memcpy(base + offset, &m_address, sizeof(m_address));
-
-    if (used != NULL)
-	*used = sizeof(m_address);
+    data.putBytes(&m_address, sizeof(m_address));
 
     return 0;
 }

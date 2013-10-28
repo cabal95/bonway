@@ -17,77 +17,98 @@ namespace mDNS
 const int NAME_MAX = 255;
 
 
-string util::get_name_part(const uint8_t *base, int offset, size_t *used)
+string util::get_name_part(DataBuffer &data)
 {
-    uint16_t    ref;
-    size_t      len;
+    string	s;
+    size_t	offset = data.getOffset();
+
+
+    s = get_name_part(data, offset, false);
+    data.seek((offset - data.getOffset()));
+
+    return s;
+}
+
+
+string util::get_name_part(DataBuffer &data, size_t &offset, bool ref)
+{
+    size_t      len, refptr;
     
         
-    len = base[offset];
+    len = data.peekInt8();
     if ((len & 0xc0) == 0xc0) {
-        memcpy(&ref, base+offset, 2);
-        ref = ntohs(ref) & ~0xc000;
-        if (used != NULL)
-            *used = 2;
-    	
-        return get_name(base, (int)ref, &len);
+	refptr = ntohs(data.peekInt16()) & ~0xc000;
+	offset += 2;
+
+        return get_name(data, refptr, true);
     }
     else if (len == 0) {
-  	if (used != NULL)
-            *used = 1;
+	offset += 1;
 
         return "";
     }
     else {
         char str[NAME_MAX];
 
-        memcpy(str, base + offset + 1, len);
+	offset += 1;
+        memcpy(str, (uint8_t *)data.rawBytes() + offset, len);
         str[len] = '\0';
-        if (used != NULL)
-            *used = (len + 1);
+	offset += len;
 
         return str;
     }
 }
 
 
-string util::get_name(const uint8_t *base, int offset, size_t *used)
+string util::get_name(DataBuffer &data)
+{
+    string	s;
+    size_t	offset = data.getOffset();
+
+
+    s = get_name(data, offset, false);
+    data.seek((offset - data.getOffset()));
+
+    return s;
+}
+
+
+string util::get_name(DataBuffer &data, size_t &offset, bool ref)
 {
     string	str, s;
-    size_t	u;
-    int		off;
+    size_t	off;
 
 
     str = "";
 
-    for (off = offset; ; off += u) {
-        s = get_name_part(base, off, &u);
-        if (s == "") {
-            off += u;
+    for (;;) {
+	off = offset;
+        s = get_name_part(data, offset, ref);
+        if (s == "")
             break;
-        }
 
-        if (off != offset)
+	//
+	// Append the next segment.
+	//
+        if (str.length() > 0)
 	    str += ".";
 	str += s;
 
-        if (u == 2 && (base[off] & 0xc0) == 0xc0) {
-            off += u;
+	//
+	// If this was a reference, stop here.
+	//
+        if ((data.peekInt8(off, true) & 0xc0) == 0xc0)
             break;
-        }
     }
-
-    if (used != NULL)
-        *used = (off - offset);
 
     return str;
 }
 
 
-int util::put_name(uint8_t *base, int offset, string name, size_t *used, map<string, int> *names)
+int util::put_name(DataBuffer &data, string name, map<string, int> *names)
 {
     string	n = name, s;
-    size_t      len, u = 0;
+    size_t      len;
 
 
     do {
@@ -97,14 +118,7 @@ int util::put_name(uint8_t *base, int offset, string name, size_t *used, map<str
         //
         if (names != NULL) {
 	    if (names->count(n) == 1) {
-                uint16_t idx;
-
-                idx = htons(names->at(n) | 0xc000);
-                memcpy(base + offset + u, &idx, sizeof(idx));
-                u += 2;
-
-                if (used != NULL)
-                    *used = u;
+		data.putInt16(htons(names->at(n) | 0xc000));
 
                 return 0;
             }
@@ -121,15 +135,13 @@ int util::put_name(uint8_t *base, int offset, string name, size_t *used, map<str
         // Append this new name reference to the list.
         //
         if (names != NULL)
-	    (*names)[n] = (offset + u);
+	    (*names)[n] = data.getOffset();
 
 	//
 	// Store this segment of the name.
 	//
-        base[offset + u] = len;
-        u += 1;
-        memcpy(base + offset + u, n.c_str(), len);
-        u += len;
+	data.putInt8(len);
+	data.putBytes(n.c_str(), n.length());
 
 	if (len < n.length())
 	    n = n.substr(len + 1);
@@ -137,17 +149,13 @@ int util::put_name(uint8_t *base, int offset, string name, size_t *used, map<str
 	    n = "";
     } while (n.length() > 0);
 
-    base[offset + u] = 0;
-    u += 1;
-
-    if (used != NULL)
-        *used = u;
+    data.putInt8(0);
 
     return 0;
 }
 
 
-int util::put_name_size_required(uint8_t *base, int offset, string name, map<string, int> *names)
+int util::put_name_size_required(DataBuffer &data, string name, map<string, int> *names)
 {
     string	n = name, s;
     size_t      len, u = 0;

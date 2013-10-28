@@ -22,6 +22,15 @@ using namespace std;
 
 namespace mDNS {
 
+record::record()
+{
+    setName("");
+    setType(RR_TYPE_ANY);
+    setClass(RR_CLASS_ANY);
+    setTTL(0);
+}
+
+
 record::record(std::string name, int type, int clazz, int ttl)
 {
     setName(name);
@@ -31,122 +40,100 @@ record::record(std::string name, int type, int clazz, int ttl)
 }
 
 
-record *record::decode(const uint8_t *data, int offset, int *used)
+record *record::decode(DataBuffer &data)
 {
     uint16_t	type, clazz, dlen;
     uint32_t	ttl;
     record	*rr = NULL;
     string	name;
-    size_t	u;
-    int		off = offset;
 
 
-    name = util::get_name(data, off, &u);
-    off += u;
-
-    memcpy(&type, data + off, sizeof(type));
-    type = ntohs(type);
-    off += sizeof(type);
-
-    memcpy(&clazz, data + off, sizeof(clazz));
-    clazz = ntohs(clazz);
+    name = util::get_name(data);
+    type = ntohs(data.readInt16());
     // In queries, top bit indicates unicast requested.
     // In responses, top bit indicates a unique RR set.
-    clazz &= ~0x8000;
-    off += sizeof(clazz);
+    clazz = ntohs(data.readInt16()) & ~0x8000;
+    ttl = ntohl(data.readInt32());
 
-    memcpy(&ttl, data + off, sizeof(ttl));
-    ttl = ntohl(ttl);
-    off += 4;
-
-    memcpy(&dlen, data + off, sizeof(dlen));
-    dlen = ntohs(dlen);
-    off += sizeof(dlen);
+    dlen = ntohs(data.readInt16());
 
     switch (type) {
 	case RR_TYPE_A:
 	{
-	    rr = new a_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new a_record();
 	    break;
 	}
 
 	case RR_TYPE_AAAA:
 	{
-	    rr = new aaaa_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new aaaa_record();
 	    break;
 	}
 
 	case RR_TYPE_NSEC:
 	{
-	    rr = new nsec_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new nsec_record();
 	    break;
 	}
 
 	case RR_TYPE_PTR:
 	{
-	    rr = new ptr_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new ptr_record();
 	    break;
 	}
 
 	case RR_TYPE_SRV:
 	{
-	    rr = new srv_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new srv_record();
 	    break;
 	}
 
 	case RR_TYPE_TXT:
 	{
-	    rr = new txt_record(name, clazz, ttl);
-	    rr->parse(data, off, dlen);
+	    rr = new txt_record();
 	    break;
 	}
 
 	default:
+	    data.seek(dlen);
 	    cout << "Unknown record type " << util::type_name(type) << ".\r\n";
 	    break;
     }
 
-    off += dlen;
-    if (used != NULL)
-	*used = (off - offset);
+    if (rr != NULL) {
+	rr->setName(name);
+	rr->setClass(clazz);
+	rr->setTTL(ttl);
+	rr->parse(data, dlen);
+    }
 
     return rr;
 }
 
 
-int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
-                   map<string, int> *names)
+int record::encode(DataBuffer &data, map<string, int> *names)
 {
-    uint16_t	type, clazz, dlen;
-    uint32_t	ttl;
-    size_t	u;
-    int		off = offset, ret;
+    off_t	off, dlenoff;
 
 
-    if (util::put_name(base, off, m_name, &u, names))
+    if (util::put_name(data, m_name, names))
 	return -ENOMEM;
-    off += u;
 
-    type = htons(m_type);
-    memcpy(base + off, &type, sizeof(type));
-    off += sizeof(type);
-
-    clazz = htons(m_clazz);
-    memcpy(base + off, &clazz, sizeof(clazz));
-    off += sizeof(clazz);
-
-    ttl = htonl(m_ttl);
-    memcpy(base + off, &ttl, sizeof(ttl));
-    off += sizeof(ttl);
+    data.putInt16(htons(m_type));
+    data.putInt16(htons(m_clazz));
+    data.putInt32(htonl(m_ttl));
 
     /* Data length */
-    off += sizeof(dlen);
+    dlenoff = data.getOffset();
+    data.putInt16(0);
 
+    this->serialize(data, names);
+    off = data.getOffset();
+    data.seek(dlenoff);
+    data.putInt16(htons(off - dlenoff - sizeof(int16_t)));
+    data.seek(dlenoff);
+
+#if 0
     switch (m_type) {
 	case RR_TYPE_A:
 	{
@@ -206,16 +193,7 @@ int record::encode(uint8_t *base, int offset, size_t size, size_t *used,
 	    cout << "Unknown record type " << util::type_name(m_type) << " during record encode.\r\n";
 	    return -EINVAL;
     }
-
-    //
-    // Update the record data length.
-    //
-    dlen = htons(u);
-    memcpy(base + off - sizeof(dlen), &dlen, sizeof(dlen));
-    off += u;
-
-    if (used)
-	*used = (off - offset);
+#endif
 
     return 0;
 }
