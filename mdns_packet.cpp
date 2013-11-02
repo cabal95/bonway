@@ -117,6 +117,42 @@ DataBuffer packet::serialize()
 }
 
 
+uint16_t packet::flags()
+{
+    return m_flags;
+}
+
+
+bool packet::isQuery()
+{
+    return ((m_flags & MDNS_PACKET_FLAG_AN) == 0);
+}
+
+
+const QueryVector &packet::queries()
+{
+    return m_queries;
+}
+
+
+const RecordVector &packet::answers()
+{
+    return m_answers;
+}
+
+
+const RecordVector &packet::nameservers()
+{
+    return m_nameservers;
+}
+
+
+const RecordVector &packet::additionals()
+{
+    return m_additionals;
+}
+
+
 void packet::dump()
 {
     RecordVector::iterator	rriter;

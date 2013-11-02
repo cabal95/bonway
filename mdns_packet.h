@@ -21,8 +21,15 @@ public:
     packet();
 
     static packet *deserialize(DataBuffer &data);
-
     DataBuffer serialize();
+
+    uint16_t flags();
+    bool isQuery();
+
+    const QueryVector &queries();
+    const RecordVector &answers();
+    const RecordVector &nameservers();
+    const RecordVector &additionals();
 
     void dump();
 };
