@@ -125,23 +125,25 @@ void packet::dump()
 
     for (qiter = m_queries.begin(); qiter != m_queries.end(); qiter++) {
 	query	*q = &(*qiter);
-	cout << q->toString() << endl;
+	cout << "QD: " << q->toString() << endl;
     }
 
     for (rriter = m_answers.begin(); rriter != m_answers.end(); rriter++) {
 	record	*rr = *rriter;
-	cout << rr->toString() << endl;
+	cout << "AN: " << rr->toString() << endl;
     }
 
     for (rriter = m_nameservers.begin(); rriter != m_nameservers.end(); rriter++) {
 	record	*rr = *rriter;
-	cout << rr->toString() << endl;
+	cout << "NS: " << rr->toString() << endl;
     }
 
     for (rriter = m_additionals.begin(); rriter != m_additionals.end(); rriter++) {
 	record	*rr = *rriter;
-	cout << rr->toString() << endl;
+	cout << "AR: " << rr->toString() << endl;
     }
+
+    cout << endl;
 }
 
 
