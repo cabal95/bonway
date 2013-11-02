@@ -45,10 +45,12 @@ void txt_record::parse(DataBuffer &data, size_t datalen)
 
     while (used < datalen) {
 	u = data.readInt8();
+	used += sizeof(uint8_t);
 	memcpy(text, data.readBytes(u), u);
 	text[u] = '\0';
 
 	m_text.push_back(text);
+	used += u;
     }
 }
 

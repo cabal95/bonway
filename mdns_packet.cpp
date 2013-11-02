@@ -4,6 +4,7 @@
 #include <string.h>
 #include <strings.h>
 #include <arpa/inet.h>
+#include <iostream>
 #include "mdns_query.h"
 #include "mdns_record.h"
 #include "databuffer.h"
@@ -113,6 +114,34 @@ DataBuffer packet::serialize()
     }
 
     return data;
+}
+
+
+void packet::dump()
+{
+    RecordVector::iterator	rriter;
+    QueryVector::iterator	qiter;
+
+
+    for (qiter = m_queries.begin(); qiter != m_queries.end(); qiter++) {
+	query	*q = &(*qiter);
+	cout << q->toString() << endl;
+    }
+
+    for (rriter = m_answers.begin(); rriter != m_answers.end(); rriter++) {
+	record	*rr = *rriter;
+	cout << rr->toString() << endl;
+    }
+
+    for (rriter = m_nameservers.begin(); rriter != m_nameservers.end(); rriter++) {
+	record	*rr = *rriter;
+	cout << rr->toString() << endl;
+    }
+
+    for (rriter = m_additionals.begin(); rriter != m_additionals.end(); rriter++) {
+	record	*rr = *rriter;
+	cout << rr->toString() << endl;
+    }
 }
 
 

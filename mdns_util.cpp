@@ -33,11 +33,11 @@ string util::get_name_part(DataBuffer &data)
 string util::get_name_part(DataBuffer &data, size_t &offset, bool ref)
 {
     size_t      len, refptr;
-    
-        
-    len = data.peekInt8();
+
+
+    len = data.peekInt8(offset, SEEK_SET);
     if ((len & 0xc0) == 0xc0) {
-	refptr = ntohs(data.peekInt16()) & ~0xc000;
+	refptr = ntohs(data.peekInt16(offset, SEEK_SET)) & ~0xc000;
 	offset += 2;
 
         return get_name(data, refptr, true);
@@ -97,7 +97,7 @@ string util::get_name(DataBuffer &data, size_t &offset, bool ref)
 	//
 	// If this was a reference, stop here.
 	//
-        if ((data.peekInt8(off, true) & 0xc0) == 0xc0)
+        if ((data.peekInt8(off, SEEK_SET) & 0xc0) == 0xc0)
             break;
     }
 

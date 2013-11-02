@@ -187,7 +187,7 @@ DataBuffer *Socket::recv(struct sockaddr *out_from, int *out_interface)
     struct msghdr	msg;
     struct iovec	io;
     uint8_t		databuf[1500], cmdbuf[1024];
-    size_t		datalen;
+    ssize_t		datalen;
     int			iface = -1;
 
 

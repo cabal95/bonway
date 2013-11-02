@@ -2,7 +2,7 @@
 #define __MDNS_PACKET_H__
 
 #include <stdint.h>
-
+#include "mdns_query.h"
 
 namespace mDNS {
 
@@ -23,6 +23,8 @@ public:
     static packet *deserialize(DataBuffer &data);
 
     DataBuffer serialize();
+
+    void dump();
 };
 
 

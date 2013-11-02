@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <string>
 #include "databuffer.h"
 
 

@@ -138,7 +138,7 @@ uint8_t DataBuffer::readInt8()
     uint8_t	value = 0;
 
 
-    if ((m_offset + sizeof(uint8_t)) < m_capacity) {
+    if ((m_offset + sizeof(uint8_t)) <= m_size) {
 	value = m_data[m_offset];
 	m_offset += sizeof(uint8_t);
     }
@@ -152,7 +152,7 @@ uint16_t DataBuffer::readInt16()
     uint16_t	value = 0;
 
 
-    if ((m_offset + sizeof(uint16_t)) < m_capacity) {
+    if ((m_offset + sizeof(uint16_t)) <= m_size) {
 	memcpy(&value, m_data + m_offset, sizeof(uint16_t));
 	m_offset += sizeof(uint16_t);
     }
@@ -166,7 +166,7 @@ uint32_t DataBuffer::readInt32()
     uint32_t	value = 0;
 
 
-    if ((m_offset + sizeof(uint32_t)) < m_capacity) {
+    if ((m_offset + sizeof(uint32_t)) <= m_size) {
 	memcpy(&value, m_data + m_offset, sizeof(uint32_t));
 	m_offset += sizeof(uint32_t);
     }
@@ -177,7 +177,7 @@ uint32_t DataBuffer::readInt32()
 
 DataBuffer DataBuffer::readData(size_t size)
 {
-    if ((m_offset + size) < m_capacity) {
+    if ((m_offset + size) <= m_size) {
 	m_offset += size;
 	return DataBuffer(m_data + m_offset - size, size);
     }
@@ -188,7 +188,7 @@ DataBuffer DataBuffer::readData(size_t size)
 
 const void *DataBuffer::readBytes(size_t size)
 {
-    if ((m_offset + size) < m_capacity) {
+    if ((m_offset + size) <= m_size) {
 	m_offset += size;
 	return (m_data + m_offset - size);
     }
@@ -207,7 +207,7 @@ uint8_t DataBuffer::peekInt8(off_t offset, int whence) const
     else if (whence == SEEK_END)
 	offset += m_size;
 
-    if (offset >= 0 && (offset + sizeof(uint8_t)) < m_size) {
+    if (offset >= 0 && (offset + sizeof(uint8_t)) <= m_size) {
 	value = m_data[offset];
     }
 
@@ -225,7 +225,7 @@ uint16_t DataBuffer::peekInt16(off_t offset, int whence) const
     else if (whence == SEEK_END)
 	offset += m_size;
 
-    if (offset >= 0 && (offset + sizeof(uint16_t)) < m_size) {
+    if (offset >= 0 && (offset + sizeof(uint16_t)) <= m_size) {
 	memcpy(&value, m_data + offset, sizeof(uint16_t));
     }
 
@@ -243,7 +243,7 @@ uint32_t DataBuffer::peekInt32(off_t offset, int whence) const
     else if (whence == SEEK_END)
 	offset += m_size;
 
-    if (offset >= 0 && (offset + sizeof(uint32_t)) < m_size) {
+    if (offset >= 0 && (offset + sizeof(uint32_t)) <= m_size) {
 	memcpy(&value, m_data + offset, sizeof(uint32_t));
     }
 
@@ -258,7 +258,7 @@ DataBuffer DataBuffer::peekData(size_t size, off_t offset, int whence) const
     else if (whence == SEEK_END)
 	offset += m_size;
 
-    if (offset >= 0 && (offset + size) < m_size) {
+    if (offset >= 0 && (offset + size) <= m_size) {
 	return DataBuffer(m_data + offset, size);
     }
 
@@ -273,7 +273,7 @@ const void *DataBuffer::peekBytes(size_t size, off_t offset, int whence) const
     else if (whence == SEEK_END)
 	offset += m_size;
 
-    if (offset >= 0 && (offset + size) < m_size) {
+    if (offset >= 0 && (offset + size) <= m_size) {
 	return (m_data + offset);
     }
 

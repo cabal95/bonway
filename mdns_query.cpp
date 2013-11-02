@@ -136,7 +136,8 @@ string query::toString()
     ostringstream	ss;
 
 
-    ss << name << " [" << type << " " << clazz << "]";
+    ss << name << " [" << util::type_name(type) << " " <<
+          util::class_name(clazz) << "]";
 
     return ss.str();
 }
