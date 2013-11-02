@@ -110,13 +110,133 @@ bool Socket::send(const DataBuffer &data, int interface)
 
 bool Socket::send(const void *data, size_t size, int interface)
 {
-    return false;
+    struct sockaddr_in	dst;
+    struct msghdr	msg;
+    struct cmsghdr	*cmsg;
+    struct in_pktinfo	*pktinfo;
+    struct iovec	io;
+    uint8_t		cbuf[128];
+    int			ret;
+
+
+    //
+    // Check for valid interface.
+    //
+    if (m_interfaces.count(interface) == 0)
+	return false;
+
+    //
+    // Check for valid data.
+    //
+    if (data == NULL || size == 0)
+	return false;
+
+    //
+    // Zero data for safety.
+    //
+    bzero(&dst, sizeof(dst));
+    bzero(cbuf, sizeof(cbuf));
+
+    //
+    // Setup the multicast address and the data buffer.
+    //
+    dst.sin_family = AF_INET;
+    dst.sin_port = htons(5353);
+    dst.sin_addr.s_addr = inet_addr("224.0.0.251");
+    io.iov_base = (void *)data;
+    io.iov_len = size;
+
+    //
+    // Setup the basic message header.
+    //
+    msg.msg_name = &dst;
+    msg.msg_namelen = sizeof(dst);
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
+    msg.msg_control = cbuf;
+    msg.msg_controllen = sizeof(cbuf);
+
+    //
+    // Setup the interface and source address to use.
+    //
+    cmsg = CMSG_FIRSTHDR(&msg);
+    cmsg->cmsg_level = IPPROTO_IP;
+    cmsg->cmsg_type = IP_PKTINFO;
+    cmsg->cmsg_len = CMSG_LEN(sizeof(struct in_pktinfo));
+    pktinfo = (struct in_pktinfo *)CMSG_DATA(cmsg);
+    pktinfo->ipi_ifindex = interface;
+    memcpy(&pktinfo->ipi_spec_dst, &m_interfaces[interface]->m_address4,
+           sizeof(pktinfo->ipi_spec_dst));
+    msg.msg_controllen = CMSG_SPACE(sizeof(struct in_pktinfo));
+
+    //
+    // Send the message.
+    //
+    ret = sendmsg(m_fd, &msg, 0);
+    if (ret < 0)
+	return false;
+
+    return true;
 }
 
 
-DataBuffer *recv(struct sockaddr *out_from, int *out_interface)
+DataBuffer *Socket::recv(struct sockaddr *out_from, int *out_interface)
 {
-    return NULL;
+    struct sockaddr_in	from;
+    struct cmsghdr	*cmsg;
+    struct msghdr	msg;
+    struct iovec	io;
+    uint8_t		databuf[1500], cmdbuf[1024];
+    size_t		datalen;
+    int			iface = -1;
+
+
+    //
+    // Setup the basic message header and pointers.
+    //
+    bzero(&msg, sizeof(struct msghdr));
+    io.iov_base = databuf;
+    io.iov_len = sizeof(databuf);
+    msg.msg_name = &from;
+    msg.msg_namelen = sizeof(from);
+    msg.msg_iov = &io;
+    msg.msg_iovlen = 1;
+    msg.msg_control = cmdbuf;
+    msg.msg_controllen = sizeof(cmdbuf);
+
+    //
+    // Read in a message.
+    //
+    datalen = recvmsg(m_fd, &msg, 0);
+    if (datalen < 0)
+	return NULL;
+
+    //
+    // Get the source interface this message came in on.
+    //
+    for (cmsg = CMSG_FIRSTHDR(&msg); cmsg != NULL; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+	if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO) {
+	    struct in_pktinfo *pi = (struct in_pktinfo *)CMSG_DATA(cmsg);
+
+	    if (m_interfaces.count(pi->ipi_ifindex) > 0) {
+		iface = pi->ipi_ifindex;
+		break;
+	    }
+	}
+    }
+
+    //
+    // Make sure it came from an expected interface.
+    //
+    if (iface == -1)
+	return NULL;
+
+    if (out_interface != NULL)
+	*out_interface = iface;
+    if (out_from != NULL)
+	memcpy(out_from, &from, sizeof(from));
+
+    return new DataBuffer(databuf, datalen);
 }
 
 
