@@ -23,13 +23,18 @@ public:
     static packet *deserialize(DataBuffer &data);
     DataBuffer serialize();
 
-    uint16_t flags();
-    bool isQuery();
+    uint16_t flags() const;
+    void flags(uint16_t);
+    bool isQuery() const;
 
-    const QueryVector &queries();
-    const RecordVector &answers();
-    const RecordVector &nameservers();
-    const RecordVector &additionals();
+    const QueryVector &queries() const;
+    void addQuery(query *q);
+    const RecordVector &answers() const;
+    void addAnswer(record *rr);
+    const RecordVector &nameservers() const;
+    void addNameserver(record *rr);
+    const RecordVector &additionals() const;
+    void addAdditional(record *rr);
 
     void dump();
 };

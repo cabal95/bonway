@@ -231,6 +231,17 @@ DataBuffer *Socket::recv(struct sockaddr *out_from, int *out_interface)
     if (iface == -1)
 	return NULL;
 
+    //
+    // For now we just ignore local packets.
+    //
+    map<int, SocketInterface *>::iterator msit;
+    for (msit = m_interfaces.begin(); msit != m_interfaces.end(); msit++) {
+	if (memcmp(&from.sin_addr, &msit->second->m_address4, sizeof(from.sin_addr)) == 0)
+	    break;
+    }
+    if (msit != m_interfaces.end())
+	return NULL;
+
     if (out_interface != NULL)
 	*out_interface = iface;
     if (out_from != NULL)

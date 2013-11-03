@@ -40,23 +40,24 @@ public:
     query(string name, int type, int clazz);
     ~query();
 
-    static query decode(DataBuffer &data);
+    static query *decode(DataBuffer &data);
     int encode(DataBuffer &data, map<string, int> *names);
 
     void setName(string value);
-    string getName();
+    string getName() const;
     void setType(int value);
-    int getType();
+    int getType() const;
     void setClazz(int value);
-    int getClazz();
+    int getClazz() const;
 
-    bool isService();
-    string getServiceName();
+    bool isService() const;
+    string getServiceName() const;
+    const StringVector &getNameSegments() const;
 
     string toString();
 };
 
-typedef std::vector<query> QueryVector;
+typedef std::vector<query *> QueryVector;
 
 } /* namespace mDNS */
 

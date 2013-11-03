@@ -43,6 +43,12 @@ int ptr_record::serialize(DataBuffer &data, map<string, int> *names)
 }
 
 
+string ptr_record::getTargetName() const
+{
+    return m_target_name;
+}
+
+
 string ptr_record::toString()
 {
     stringstream	ss;

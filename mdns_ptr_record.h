@@ -20,6 +20,8 @@ protected:
 public:
     ptr_record(std::string name, int clazz, int ttl, std::string target_name);
 
+    std::string getTargetName() const;
+
     std::string toString();
 
     friend class record;

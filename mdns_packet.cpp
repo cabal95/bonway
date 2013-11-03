@@ -43,7 +43,7 @@ packet *packet::deserialize(DataBuffer &data)
     // Read all the queries.
     //
     for (i = 0; i < qdcount; i++) {
-	query q = query::decode(data);
+	query *q = query::decode(data);
 	pkt->m_queries.push_back(q);
     }
 
@@ -94,7 +94,7 @@ DataBuffer packet::serialize()
     data.putInt16(htons(m_additionals.size()));
 
     for (qiter = m_queries.begin(); qiter != m_queries.end(); qiter++) {
-	query	*q = &(*qiter);
+	query	*q = *qiter;
 	q->encode(data, &names);
     }
 
@@ -117,39 +117,69 @@ DataBuffer packet::serialize()
 }
 
 
-uint16_t packet::flags()
+uint16_t packet::flags() const
 {
     return m_flags;
 }
 
 
-bool packet::isQuery()
+void packet::flags(uint16_t flags)
+{
+    m_flags = flags;
+}
+
+
+bool packet::isQuery() const
 {
     return ((m_flags & MDNS_PACKET_FLAG_AN) == 0);
 }
 
 
-const QueryVector &packet::queries()
+const QueryVector &packet::queries() const
 {
     return m_queries;
 }
 
 
-const RecordVector &packet::answers()
+void packet::addQuery(query *q)
+{
+    m_queries.push_back(q);
+}
+
+
+const RecordVector &packet::answers() const
 {
     return m_answers;
 }
 
 
-const RecordVector &packet::nameservers()
+void packet::addAnswer(record *rr)
+{
+    m_answers.push_back(rr);
+}
+
+
+const RecordVector &packet::nameservers() const
 {
     return m_nameservers;
 }
 
 
-const RecordVector &packet::additionals()
+void packet::addNameserver(record *rr)
+{
+    m_nameservers.push_back(rr);
+}
+
+
+const RecordVector &packet::additionals() const
 {
     return m_additionals;
+}
+
+
+void packet::addAdditional(record *rr)
+{
+    m_additionals.push_back(rr);
 }
 
 
@@ -160,7 +190,7 @@ void packet::dump()
 
 
     for (qiter = m_queries.begin(); qiter != m_queries.end(); qiter++) {
-	query	*q = &(*qiter);
+	query	*q = *qiter;
 	cout << "QD: " << q->toString() << endl;
     }
 

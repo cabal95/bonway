@@ -28,21 +28,25 @@ protected:
 
 
 public:
+    virtual ~record();
+
     static record *decode(DataBuffer &data);
 
     int encode(DataBuffer &data, std::map<std::string, int> *names);
 
     void setName(std::string value);
-    std::string getName();
+    std::string getName() const;
     void setType(int value);
-    int getType();
+    int getType() const;
     void setClass(int value);
-    int getClass();
+    int getClass() const;
     void setTTL(int value);
-    int getTTL();
+    int getTTL() const;
+    time_t getTTLBase() const;
 
-    bool isService();
-    std::string getServiceName();
+    bool isService() const;
+    std::string getServiceName() const;
+    const StringVector &getNameSegments() const;
 
     virtual std::string toString();
 };

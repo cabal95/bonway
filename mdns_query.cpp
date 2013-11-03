@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -38,16 +39,16 @@ query::~query()
 }
 
 
-query query::decode(DataBuffer &data)
+query *query::decode(DataBuffer &data)
 {
-    query	query;
+    query	*q = new query();
 
 
-    query.setName(util::get_name(data));
-    query.setType(ntohs(data.readInt16()));
-    query.setClazz(ntohs(data.readInt16()) & ~0x8000);
+    q->setName(util::get_name(data));
+    q->setType(ntohs(data.readInt16()));
+    q->setClazz(ntohs(data.readInt16()) & ~0x8000);
 
-    return query;
+    return q;
 }
 
 
@@ -75,6 +76,7 @@ void query::setName(string value)
     while (getline(ss, item, '.')) {
 	name_segment.push_back(item);
     }
+    reverse(name_segment.begin(), name_segment.end());
 
     service_name = "";
     if (name_segment.size() >= 3) {
@@ -89,7 +91,7 @@ void query::setName(string value)
 }
 
 
-string query::getName()
+string query::getName() const
 {
     return name;
 }
@@ -101,7 +103,7 @@ void query::setType(int value)
 }
 
 
-int query::getType()
+int query::getType() const
 {
     return type;
 }
@@ -113,21 +115,27 @@ void query::setClazz(int value)
 }
 
 
-int query::getClazz()
+int query::getClazz() const
 {
     return clazz;
 }
 
 
-bool query::isService()
+bool query::isService() const
 {
     return (service_name != "");
 }
 
 
-string query::getServiceName()
+string query::getServiceName() const
 {
     return service_name;
+}
+
+
+const StringVector &query::getNameSegments() const
+{
+    return name_segment;
 }
 
 

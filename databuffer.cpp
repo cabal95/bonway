@@ -48,6 +48,8 @@ void DataBuffer::increaseIfNeeded(size_t size)
 	m_data = (uint8_t *)realloc(m_data, cap);
 	m_capacity = cap;
     }
+
+    m_size += size;
 }
 
 
@@ -88,7 +90,7 @@ void DataBuffer::seek(off_t offset, int whence)
 	m_offset = 0;
 
     if (m_offset > (off_t)m_size)
-	increaseIfNeeded(m_size - m_offset);
+	increaseIfNeeded(m_offset - m_size);
 }
 
 

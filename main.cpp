@@ -22,7 +22,7 @@
 #include "mdns_ptr_record.h"
 #include "mdns_nsec_record.h"
 //#include "mdns_list.h"
-//#include "mdns_relay.h"
+#include "mdns_relay.h"
 #include "databuffer.h"
 
 
@@ -31,29 +31,40 @@ using namespace mDNS;
 
 int main(int argc, char *argv[])
 {
-    struct sockaddr_in from;
+    struct sockaddr_in *from_in;
+    struct sockaddr from;
     int iface;
     DataBuffer	*buffer;
     Socket	*sock;
     packet	*pkt;
     char	addr[INET_ADDRSTRLEN];
+    Relay	relay;
 
+
+//    relay.addService(RelayService("_airplay._tcp", if_nametoindex("ens4"), if_nametoindex("ens3")));
+//    relay.addService(RelayService("_afpovertcp._tcp", if_nametoindex("ens4"), if_nametoindex("ens3")));
+    relay.addService(RelayService("_udisks-ssh._tcp", if_nametoindex("ens3"), if_nametoindex("ens4")));
 
     sock = new Socket();
     sock->bind("ens3", "LAN");
+    sock->bind("ens4", "Test");
+    from_in = (struct sockaddr_in *)&from;
 
     while (1) {
-	buffer = sock->recv((struct sockaddr *)&from, &iface);
-        if (buffer == NULL)
+	buffer = sock->recv(&from, &iface);
+        if (buffer == NULL) {
+	    usleep(50 * 1000);
 	    continue;
+	}
 
-	inet_ntop(AF_INET, &from.sin_addr, addr, sizeof(addr));
+	inet_ntop(AF_INET, &from_in->sin_addr, addr, sizeof(addr));
 	cout << "Got packet from " << addr << " on interface " << iface << ".\r\n";
 
 	pkt = packet::deserialize(*buffer);
 	if (pkt != NULL)
 	    pkt->dump();
 
+	relay.processPacket(*sock, pkt, from, iface);
 #if 0
 	if (mdns_socket_recv(sock, &packet, NULL, NULL) == 0) {
 	    printf("\r\n");

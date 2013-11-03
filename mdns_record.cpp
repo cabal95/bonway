@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <algorithm>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -37,6 +38,11 @@ record::record(std::string name, int type, int clazz, int ttl)
     setType(type);
     setClass(clazz);
     setTTL(ttl);
+}
+
+
+record::~record()
+{
 }
 
 
@@ -129,9 +135,9 @@ int record::encode(DataBuffer &data, map<string, int> *names)
 
     this->serialize(data, names);
     off = data.getOffset();
-    data.seek(dlenoff);
+    data.seek(dlenoff, SEEK_SET);
     data.putInt16(htons(off - dlenoff - sizeof(int16_t)));
-    data.seek(dlenoff);
+    data.seek(off, SEEK_SET);
 
 #if 0
     switch (m_type) {
@@ -211,21 +217,24 @@ void record::setName(string value)
     while (getline(ss, item, '.')) {
 	m_name_segment.push_back(item);
     }
+    reverse(m_name_segment.begin(), m_name_segment.end());
 
     m_service_name = "";
     if (m_name_segment.size() >= 3) {
 	if (m_name_segment[1] == "_udp" || m_name_segment[1] == "_tcp") {
 	    for (int i = (m_name_segment.size() - 1); i > 0; i--) {
-		if (m_service_name != "")
-		    m_service_name += ".";
-		m_service_name += m_name_segment[i];
+		if (m_name_segment[i][0] == '_') {
+		    if (m_service_name != "")
+			m_service_name += ".";
+		    m_service_name += m_name_segment[i];
+		}
 	    }
 	}
     }
 }
 
 
-string record::getName()
+string record::getName() const
 {
     return m_name;
 }
@@ -237,7 +246,7 @@ void record::setType(int value)
 }
 
 
-int record::getType()
+int record::getType() const
 {
     return m_type;
 }
@@ -249,7 +258,7 @@ void record::setClass(int value)
 }
 
 
-int record::getClass()
+int record::getClass() const
 {
     return m_clazz;
 }
@@ -262,21 +271,33 @@ void record::setTTL(int value)
 }
 
 
-int record::getTTL()
+int record::getTTL() const
 {
     return m_ttl;
 }
 
 
-bool record::isService()
+time_t record::getTTLBase() const
+{
+    return m_ttl_base;
+}
+
+
+bool record::isService() const
 {
     return (m_service_name.size() > 0);
 }
 
 
-string record::getServiceName()
+string record::getServiceName() const
 {
     return m_service_name;
+}
+
+
+const StringVector &record::getNameSegments() const
+{
+    return m_name_segment;
 }
 
 

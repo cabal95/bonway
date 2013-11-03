@@ -141,7 +141,7 @@ int util::put_name(DataBuffer &data, string name, map<string, int> *names)
 	// Store this segment of the name.
 	//
 	data.putInt8(len);
-	data.putBytes(n.c_str(), n.length());
+	data.putBytes(n.c_str(), len);
 
 	if (len < n.length())
 	    n = n.substr(len + 1);
