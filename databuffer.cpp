@@ -308,6 +308,9 @@ const void *DataBuffer::rawBytes() const
 
 DataBuffer &DataBuffer::operator=(const DataBuffer &rhs)
 {
+    if (m_data != NULL)
+	free(m_data);
+
     m_capacity = rhs.m_capacity;
     m_size = rhs.m_size;
     m_offset = rhs.m_offset;

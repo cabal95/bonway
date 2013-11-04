@@ -95,6 +95,7 @@ void Relay::sendQueries(Socket &socket)
 {
     map<int, QueryVector>::iterator	mqit;
     QueryVector::iterator		qit;
+    DataBuffer				buffer;
     packet				*pkt;
     query				*q;
 
@@ -116,7 +117,8 @@ void Relay::sendQueries(Socket &socket)
 	if (pkt != NULL) {
 	    cout << "Sending QD to " << mqit->first << endl;
 	    pkt->dump();
-	    socket.send(pkt->serialize(), mqit->first);
+	    buffer = pkt->serialize();
+	    socket.send(buffer, mqit->first);
 	    delete pkt;
 	}
     }
@@ -127,6 +129,7 @@ void Relay::sendAnswers(Socket &socket)
 {
     map<int, RecordVector>::iterator	mrit;
     RecordVector::iterator		rit;
+    DataBuffer				buffer;
     packet				*pkt;
     record				*rr;
 
@@ -150,7 +153,8 @@ void Relay::sendAnswers(Socket &socket)
 	if (pkt != NULL) {
 	    cout << "Sending AN to " << mrit->first << endl;
 	    pkt->dump();
-	    socket.send(pkt->serialize(), mrit->first);
+	    buffer = pkt->serialize();
+	    socket.send(buffer, mrit->first);
 	    delete pkt;
 	}
     }

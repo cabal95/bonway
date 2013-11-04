@@ -58,6 +58,13 @@ Socket::Socket()
 
 Socket::~Socket()
 {
+    map<int, SocketInterface*>::iterator	mit;
+
+
+    for (mit = m_interfaces.begin(); mit != m_interfaces.end(); mit++) {
+	delete mit->second;
+    }
+
     if (m_fd != -1)
 	close(m_fd);
 }
