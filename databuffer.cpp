@@ -35,6 +35,16 @@ DataBuffer::DataBuffer(const void *data, size_t size)
 }
 
 
+DataBuffer::DataBuffer(const DataBuffer &rhs)
+{
+    m_capacity = rhs.m_capacity;
+    m_size = rhs.m_size;
+    m_offset = rhs.m_offset;
+    m_data = (uint8_t *)malloc(m_capacity);
+    memcpy(m_data, rhs.m_data, m_size);
+}
+
+
 void DataBuffer::increaseIfNeeded(size_t size)
 {
     size_t cap = m_capacity;

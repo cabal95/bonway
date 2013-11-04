@@ -22,6 +22,7 @@ public:
     DataBuffer();
     DataBuffer(size_t capacity);
     DataBuffer(const void *data, size_t size);
+    DataBuffer(const DataBuffer &rhs);
 
     size_t getCapacity() const;
     size_t getSize() const;
