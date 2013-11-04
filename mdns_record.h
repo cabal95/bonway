@@ -21,11 +21,11 @@ private:
 
 protected:
     record();
+    record(const record &rhs);
     record(std::string name, int type, int clazz, int ttl);
     virtual void parse(DataBuffer &data, size_t datalen) = 0;
     virtual int serialize(DataBuffer &data,
                           std::map<std::string, int> *names) = 0;
-
 
 public:
     virtual ~record();
@@ -48,6 +48,7 @@ public:
     std::string getServiceName() const;
     const StringVector &getNameSegments() const;
 
+    virtual record *clone() const = 0;
     virtual std::string toString();
 };
 

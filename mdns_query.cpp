@@ -34,6 +34,16 @@ query::query(string pname, int ptype, int pclazz)
 }
 
 
+query::query(const query &rhs)
+{
+    name = rhs.name;
+    service_name = rhs.service_name;
+    type = rhs.type;
+    clazz = rhs.clazz;
+    name_segment = rhs.name_segment;
+}
+
+
 query::~query()
 {
 }

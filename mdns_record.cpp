@@ -32,6 +32,18 @@ record::record()
 }
 
 
+record::record(const record &rhs)
+{
+    m_name = rhs.m_name;
+    m_service_name = rhs.m_service_name;
+    m_type = rhs.m_type;
+    m_clazz = rhs.m_clazz;
+    m_name_segment = rhs.m_name_segment;
+    m_ttl = rhs.m_ttl;
+    m_ttl_base = rhs.m_ttl_base;
+}
+
+
 record::record(std::string name, int type, int clazz, int ttl)
 {
     setName(name);

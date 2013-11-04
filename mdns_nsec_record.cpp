@@ -27,6 +27,14 @@ nsec_record::nsec_record(string name, int clazz, int ttl, string next_name)
 }
 
 
+nsec_record::nsec_record(const nsec_record &rhs)
+            : record(rhs)
+{
+    m_next_name = rhs.m_next_name;
+    memcpy(&m_bitmap, &rhs.m_bitmap, sizeof(m_bitmap));
+}
+
+
 void nsec_record::parse(DataBuffer &data, size_t datalen)
 {
     int	i, count;

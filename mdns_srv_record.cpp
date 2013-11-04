@@ -30,6 +30,16 @@ srv_record::srv_record(string name, int clazz, int ttl, string target_name,
 }
 
 
+srv_record::srv_record(const srv_record &rhs)
+           : record(rhs)
+{
+    m_priority = rhs.m_priority;
+    m_weight = rhs.m_weight;
+    m_port = rhs.m_port;
+    m_target_name = rhs.m_target_name;
+}
+
+
 void srv_record::parse(DataBuffer &data, size_t datalen)
 {
     // TODO error check dlen

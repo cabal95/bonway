@@ -33,6 +33,13 @@ txt_record::txt_record(string name, int clazz, int ttl, string text)
 }
 
 
+txt_record::txt_record(const txt_record &rhs)
+           : record(rhs)
+{
+    m_text = rhs.m_text;
+}
+
+
 void txt_record::parse(DataBuffer &data, size_t datalen)
 {
     size_t	u, used = 0;

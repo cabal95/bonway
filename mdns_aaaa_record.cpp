@@ -26,6 +26,13 @@ aaaa_record::aaaa_record(string name, int clazz, int ttl,
 }
 
 
+aaaa_record::aaaa_record(const aaaa_record &rhs)
+            : record(rhs)
+{
+    memcpy(&m_address, &rhs.m_address, sizeof(m_address));
+}
+
+
 void aaaa_record::parse(DataBuffer &data, size_t datalen)
 {
     // TODO error check dlen

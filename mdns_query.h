@@ -38,6 +38,7 @@ protected:
 
 public:
     query(string name, int type, int clazz);
+    query(const query &rhs);
     ~query();
 
     static query *decode(DataBuffer &data);

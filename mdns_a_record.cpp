@@ -25,6 +25,13 @@ a_record::a_record(string name, int clazz, int ttl, struct in_addr address)
 }
 
 
+a_record::a_record(const a_record &rhs)
+         : record(rhs)
+{
+    memcpy(&m_address, &rhs.m_address, sizeof(m_address));
+}
+
+
 void a_record::parse(DataBuffer &data, size_t datalen)
 {
     // TODO error check dlen

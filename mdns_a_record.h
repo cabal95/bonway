@@ -21,11 +21,13 @@ protected:
     
 public:
     a_record(std::string name, int clazz, int ttl, struct in_addr address);
+    a_record(const a_record &rhs);
 
     void setAddress(struct in_addr address);
     struct in_addr	getAddress();
 
-    std::string toString();
+    virtual a_record *clone() const { return new a_record(*this); }
+    virtual std::string toString();
 
     friend class record;
 };

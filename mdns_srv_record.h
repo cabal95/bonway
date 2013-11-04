@@ -23,6 +23,7 @@ protected:
 public:
     srv_record(std::string name, int clazz, int ttl, std::string target_name,
                uint16_t port);
+    srv_record(const srv_record &rhs);
 
     void setPriority(uint16_t priority);
     uint16_t getPriority();
@@ -36,7 +37,8 @@ public:
     void setTargetName(std::string target_name);
     std::string getTargetName();
 
-    std::string toString();
+    virtual srv_record *clone() const { return new srv_record(*this); }
+    virtual std::string toString();
 
     friend class record;
 };

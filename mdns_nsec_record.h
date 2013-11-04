@@ -20,11 +20,13 @@ protected:
 
 public:
     nsec_record(std::string name, int clazz, int ttl, std::string next_name);
+    nsec_record(const nsec_record &rhs);
 
     bool hasType(int type);
     void setType(int type, bool state = true);
 
-    std::string toString();
+    virtual nsec_record *clone() const { return new nsec_record(*this); }
+    virtual std::string toString();
 
     friend class record;
 };

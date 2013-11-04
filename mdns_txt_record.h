@@ -20,12 +20,14 @@ protected:
 public:
     txt_record(std::string name, int clazz, int ttl, StringList text);
     txt_record(std::string name, int clazz, int ttl, std::string text);
+    txt_record(const txt_record &rhs);
 
     void addText(std::string text);
     bool hasText(std::string text);
     StringList getText();
 
-    std::string toString();
+    virtual txt_record *clone() const { return new txt_record(*this); }
+    virtual std::string toString();
 
     friend class record;
 };

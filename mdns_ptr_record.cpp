@@ -25,6 +25,13 @@ ptr_record::ptr_record(string name, int clazz, int ttl, string target_name)
 }
 
 
+ptr_record::ptr_record(const ptr_record &rhs)
+           : record(rhs)
+{
+    m_target_name = rhs.m_target_name;
+}
+
+
 void ptr_record::parse(DataBuffer &data, size_t datalen)
 {
     // TODO error check dlen

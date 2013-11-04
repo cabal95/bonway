@@ -19,10 +19,12 @@ protected:
 
 public:
     ptr_record(std::string name, int clazz, int ttl, std::string target_name);
+    ptr_record(const ptr_record &rhs);
 
     std::string getTargetName() const;
 
-    std::string toString();
+    virtual ptr_record *clone() const { return new ptr_record(*this); }
+    virtual std::string toString();
 
     friend class record;
 };
