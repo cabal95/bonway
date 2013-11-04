@@ -21,6 +21,30 @@ packet::packet()
 }
 
 
+packet::~packet()
+{
+    QueryVector::iterator	qvit;
+    RecordVector::iterator	rvit;
+
+
+    for (qvit = m_queries.begin(); qvit != m_queries.end(); qvit++) {
+	delete *qvit;
+    }
+
+    for (rvit = m_answers.begin(); rvit != m_answers.end(); rvit++) {
+	delete *rvit;
+    }
+
+    for (rvit = m_nameservers.begin(); rvit != m_nameservers.end(); rvit++) {
+	delete *rvit;
+    }
+
+    for (rvit = m_additionals.begin(); rvit != m_additionals.end(); rvit++) {
+	delete *rvit;
+    }
+}
+
+
 packet *packet::deserialize(DataBuffer &data)
 {
     uint16_t	qdcount, ancount, nscount, arcount;

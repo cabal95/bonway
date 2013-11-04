@@ -19,6 +19,7 @@ private:
 
 public:
     packet();
+    ~packet();
 
     static packet *deserialize(DataBuffer &data);
     DataBuffer serialize();

@@ -320,7 +320,7 @@ void Relay::relayServiceQuery(const RelayService *rs, const query *q)
 
 
     for (iit = rs->m_servers.begin(); iit != rs->m_servers.end(); iit++) {
-	m_query_queue[*iit].push_back((query *)q);
+	m_query_queue[*iit].push_back(new query(*q));
     }
 }
 
@@ -333,7 +333,7 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 
 
     for (iit = rs->m_clients.begin(); iit != rs->m_clients.end(); iit++) {
-	m_answer_queue[*iit].push_back((record *)rr);
+	m_answer_queue[*iit].push_back(rr->clone());
     }
 
     if (rr->getType() == RR_TYPE_PTR) {
@@ -348,12 +348,13 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 	}
 
 	if (rvit != m_known_records[interface].end()) {
+	    delete *rvit;
 	    m_known_records[interface].erase(rvit, rvit);
 	}
     }
 
     cout << "Adding " << util::type_name(rr->getType()) << " to " << interface << endl;
-    m_known_records[interface].push_back((record *)rr);
+    m_known_records[interface].push_back(rr->clone());
 }
 
 
@@ -371,6 +372,7 @@ void Relay::checkCacheExpiry()
 	for (rrit = mrit->second.begin(); rrit != mrit->second.end(); ) {
 	    if (((*rrit)->getTTLBase() + (*rrit)->getTTL()) < now) {
 		cout << "Expiring record " << (*rrit)->getName() << endl;
+		delete *rrit;
 		rrit = mrit->second.erase(rrit);
 	    }
 	    else
@@ -397,7 +399,7 @@ void Relay::relayAQuery(const query *q, int interface)
 	    if ((*rrit)->getType() == RR_TYPE_SRV) {
 		srv = (srv_record *)(*rrit);
 		if (srv->getTargetName() == q->getName()) {
-		    m_query_queue[mrit->first].push_back((query *)q);
+		    m_query_queue[mrit->first].push_back(new query(*q));
 		    break;
 		}
 	    }
@@ -441,7 +443,7 @@ void Relay::relayAServiceAnswer(const a_record *a, int interface, string service
 	    continue;
 
 	ifaces.push_back(*iit);
-	m_answer_queue[*iit].push_back((a_record *)a);
+	m_answer_queue[*iit].push_back(a->clone());
     }
 }
 
