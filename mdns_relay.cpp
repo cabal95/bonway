@@ -349,7 +349,7 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 
 	if (rvit != m_known_records[interface].end()) {
 	    delete *rvit;
-	    m_known_records[interface].erase(rvit, rvit);
+	    m_known_records[interface].erase(rvit);
 	}
     }
 

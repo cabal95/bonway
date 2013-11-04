@@ -45,6 +45,13 @@ DataBuffer::DataBuffer(const DataBuffer &rhs)
 }
 
 
+DataBuffer::~DataBuffer()
+{
+    if (m_data != NULL)
+	free(m_data);
+}
+
+
 void DataBuffer::increaseIfNeeded(size_t size)
 {
     size_t cap = m_capacity;
