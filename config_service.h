@@ -1,20 +1,34 @@
 #ifndef __CONFIG_SERVICE_H__
 #define __CONFIG_SERVICE_H__
 
-#include "mdns_list.h"
+#include <vector>
+#include <string>
 
 
-typedef struct g_config_service
+namespace mDNS {
+
+class ConfigService
 {
-    mdns_list	*type;
+private:
+    std::vector<std::string>	m_types;
+    std::vector<int>		m_server_interfaces;
+    std::vector<int>		m_client_interfaces;
 
-    int		server_iface[32];
-    int		client_iface[32];
-} config_service;
+protected:
+    void addType(std::string type);
+    void addServerInterface(int interface);
+    void addClientInterface(int interface);
 
+public:
+    ConfigService();
 
-config_service	*config_service_new();
-void		config_service_free();
+    const std::vector<std::string> types() const;
+    const std::vector<int> serverInterfaces() const;
+    const std::vector<int> clientInterfaces() const;
 
+    friend class ConfigFile;
+};
+
+} /* namespace mDNS */
 
 #endif /* __CONFIG_SERVICE_H__ */

@@ -25,6 +25,7 @@
 //#include "mdns_list.h"
 #include "mdns_relay.h"
 #include "databuffer.h"
+#include "config_file.h"
 
 
 using namespace std;
@@ -43,6 +44,13 @@ int main(int argc, char *argv[])
     struct sockaddr_in *from_in;
     struct sockaddr from;
     int iface;
+    vector<ConfigService>::iterator	csit;
+    vector<string>::iterator	sit;
+    vector<ConfigService>	services;
+    vector<int>::iterator	iit, iiit;
+    vector<string>		interfaces, types;
+    vector<int>			sifaces, cifaces;
+    ConfigFile	config;
     DataBuffer	*buffer;
     Socket	*sock;
     packet	*pkt;
@@ -51,16 +59,41 @@ int main(int argc, char *argv[])
 
 
     signal(SIGINT, intHandler);
-
-//    relay.addService(RelayService("_airplay._tcp", if_nametoindex("ens4"), if_nametoindex("ens3")));
-//    relay.addService(RelayService("_afpovertcp._tcp", if_nametoindex("ens4"), if_nametoindex("ens3")));
-    relay.addService(RelayService("_udisks-ssh._tcp", if_nametoindex("ens3"), if_nametoindex("ens4")));
-
-    sock = new Socket();
-    sock->bind("ens3", "LAN");
-    sock->bind("ens4", "Test");
     from_in = (struct sockaddr_in *)&from;
 
+    if (!config.parseFile("bonway.conf"))
+	return -1;
+
+    //
+    // Setup the relay server to relay the proper services.
+    //
+    services = config.services();
+    for (csit = services.begin(); csit != services.end(); csit++) {
+	types = (*csit).types();
+	sifaces = (*csit).serverInterfaces();
+	cifaces = (*csit).clientInterfaces();
+
+	for (sit = types.begin(); sit != types.end(); sit++) {
+	    for (iit = sifaces.begin(); iit != sifaces.end(); iit++) {
+		for (iiit = cifaces.begin(); iiit != cifaces.end(); iiit++) {
+		    relay.addService(RelayService(*sit, *iiit, *iit));
+		}
+	    }
+	}
+    }
+
+    //
+    // Initialize the socket and bind to the used interfaces.
+    //
+    sock = new Socket();
+    interfaces = config.interfaceNames();
+    for (sit = interfaces.begin(); sit != interfaces.end(); sit++) {
+	sock->bind(*sit, *sit);
+    }
+
+    //
+    // Loop until we are told to quit.
+    //
     while (exit_signal == 0) {
 	buffer = sock->recv(&from, &iface);
         if (buffer == NULL) {

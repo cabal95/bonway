@@ -1,16 +1,29 @@
 #ifndef __CONFIG_FILE_H__
 #define __CONFIG_FILE_H__
 
+#include <string>
+#include <vector>
 #include "config_service.h"
 
+namespace mDNS {
 
-int config_file_init();
-void config_file_free();
+class ConfigFile
+{
+private:
+    std::vector<ConfigService>	m_services;
 
-const mdns_list *config_file_get_services();
-mdns_list *config_file_get_used_interface_names();
-mdns_list *config_file_get_service_types_for_server_interface(const char *interface);
+public:
+    ConfigFile();
 
+    bool parseFile(std::string filename);
 
-#endif /* __CONFIG_SERVICE_H__ */
+    const std::vector<ConfigService> services() const;
+
+    const std::vector<std::string> interfaceNames() const;
+    const std::vector<int> interfaces() const;
+};
+
+} /* namespace mDNS */
+
+#endif /* __CONFIG_FILE_H__ */
 
