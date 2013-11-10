@@ -22,7 +22,6 @@
 #include "mdns_srv_record.h"
 #include "mdns_ptr_record.h"
 #include "mdns_nsec_record.h"
-//#include "mdns_list.h"
 #include "mdns_relay.h"
 #include "databuffer.h"
 #include "config_file.h"
@@ -39,6 +38,12 @@ void intHandler(int dummy)
 }
 
 
+void show_help()
+{
+    printf("Help! I need somebody (to write documentation).\r\n");
+}
+
+
 int main(int argc, char *argv[])
 {
     struct sockaddr_in *from_in;
@@ -50,18 +55,37 @@ int main(int argc, char *argv[])
     vector<int>::iterator	iit, iiit;
     vector<string>		interfaces, types;
     vector<int>			sifaces, cifaces;
+    const char			*config_file;
     ConfigFile	config;
     DataBuffer	*buffer;
     Socket	*sock;
     packet	*pkt;
     char	addr[INET_ADDRSTRLEN];
     Relay	relay;
+    int		c;
 
+
+    while ((c = getopt(argc, argv, "hc:")) != -1) {
+	switch (c) {
+	    case 'h':
+		show_help();
+		return 1;
+
+	    case 'c':
+		config_file = optarg;
+		break;
+
+	    case '?':
+		fprintf(stderr, "Unknown option '-%c'.\r\n", optopt);
+		show_help();
+		break;
+	}
+    }
 
     signal(SIGINT, intHandler);
     from_in = (struct sockaddr_in *)&from;
 
-    if (!config.parseFile("bonway.conf"))
+    if (!config.parseFile(config_file))
 	return -1;
 
     //
