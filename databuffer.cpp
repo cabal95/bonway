@@ -96,7 +96,10 @@ size_t DataBuffer::getAvailable() const
 
 void DataBuffer::setSize(size_t size)
 {
-    m_size = size;
+    if (size > m_size)
+	increaseIfNeeded(size - m_size);
+    else
+	m_size = size;
 }
 
 
