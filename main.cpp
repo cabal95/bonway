@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     vector<int>::iterator	iit, iiit;
     vector<string>		interfaces, types;
     vector<int>			sifaces, cifaces;
-    const char			*config_file;
+    const char			*config_file = "bonway.conf";
     ConfigFile	config;
     DataBuffer	*buffer;
     Socket	*sock;
@@ -130,8 +130,8 @@ int main(int argc, char *argv[])
 
 	pkt = packet::deserialize(*buffer);
 	delete buffer;
-	if (pkt != NULL)
-	    pkt->dump();
+//	if (pkt != NULL)
+//	    pkt->dump();
 
 	relay.processPacket(*sock, pkt, from, iface);
 	delete pkt;

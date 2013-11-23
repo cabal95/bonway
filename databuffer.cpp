@@ -94,6 +94,12 @@ size_t DataBuffer::getAvailable() const
 }
 
 
+void DataBuffer::setSize(size_t size)
+{
+    m_size = size;
+}
+
+
 void DataBuffer::seek(off_t offset, int whence)
 {
     if (whence == SEEK_SET)

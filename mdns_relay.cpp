@@ -96,31 +96,13 @@ void Relay::sendQueries(Socket &socket)
     map<int, QueryVector>::iterator	mqit;
     QueryVector::iterator		qit;
     DataBuffer				buffer;
-    packet				*pkt;
-    query				*q;
 
 
     for (mqit = m_query_queue.begin(); mqit != m_query_queue.end(); mqit++) {
 	QueryVector &qv = mqit->second;
-	pkt = NULL;
 
-	for (qit = qv.begin(); qit != qv.end(); ) {
-	    q = *qit;
-
-	    if (pkt == NULL)
-		pkt = new packet();
-
-	    pkt->addQuery(q);
-	    qit = qv.erase(qit);
-	}
-
-	if (pkt != NULL) {
-	    cout << "Sending QD to " << mqit->first << endl;
-	    pkt->dump();
-	    buffer = pkt->serialize();
-	    socket.send(buffer, mqit->first);
-	    delete pkt;
-	}
+	buffer = packet::serializeQueries(&qv, &m_known_records[mqit->first]);
+	socket.send(buffer, mqit->first);
     }
 }
 
@@ -130,33 +112,13 @@ void Relay::sendAnswers(Socket &socket)
     map<int, RecordVector>::iterator	mrit;
     RecordVector::iterator		rit;
     DataBuffer				buffer;
-    packet				*pkt;
-    record				*rr;
 
 
     for (mrit = m_answer_queue.begin(); mrit != m_answer_queue.end(); mrit++) {
 	RecordVector &rv = mrit->second;
-	pkt = NULL;
 
-	for (rit = rv.begin(); rit != rv.end(); ) {
-	    rr = *rit;
-
-	    if (pkt == NULL) {
-		pkt = new packet();
-		pkt->flags(MDNS_PACKET_FLAG_AN | MDNS_PACKET_FLAG_AA);
-	    }
-
-	    pkt->addAnswer(rr);
-	    rit = rv.erase(rit);
-	}
-
-	if (pkt != NULL) {
-	    cout << "Sending AN to " << mrit->first << endl;
-	    pkt->dump();
-	    buffer = pkt->serialize();
-	    socket.send(buffer, mrit->first);
-	    delete pkt;
-	}
+	buffer = packet::serializeAnswers(&rv, &m_known_records[mrit->first]);
+	socket.send(buffer, mrit->first);
     }
 }
 
@@ -357,7 +319,6 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 	}
     }
 
-    cout << "Adding " << util::type_name(rr->getType()) << " to " << interface << endl;
     m_known_records[interface].push_back(rr->clone());
 }
 

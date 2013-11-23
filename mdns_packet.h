@@ -23,6 +23,8 @@ public:
 
     static packet *deserialize(DataBuffer &data);
     DataBuffer serialize();
+    static DataBuffer serializeQueries(QueryVector *queries, RecordVector *records);
+    static DataBuffer serializeAnswers(RecordVector *answers, RecordVector *records);
 
     uint16_t flags() const;
     void flags(uint16_t);

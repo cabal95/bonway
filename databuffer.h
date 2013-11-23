@@ -29,6 +29,7 @@ public:
     size_t getSize() const;
     off_t getOffset() const;
     size_t getAvailable() const;
+    void setSize(size_t size);
     void seek(off_t offset, int whence = SEEK_CUR);
 
     void putInt8(uint8_t value);
