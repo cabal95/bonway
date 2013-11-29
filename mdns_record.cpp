@@ -151,68 +151,6 @@ int record::encode(DataBuffer &data, map<string, int> *names)
     data.putInt16(htons(off - dlenoff - sizeof(int16_t)));
     data.seek(off, SEEK_SET);
 
-#if 0
-    switch (m_type) {
-	case RR_TYPE_A:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	case RR_TYPE_AAAA:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	case RR_TYPE_NSEC:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	case RR_TYPE_PTR:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	case RR_TYPE_SRV:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	case RR_TYPE_TXT:
-	{
-	    ret = this->serialize(base, off, size, &u, names);
-	    if (ret)
-		return ret;
-
-	    break;
-	}
-
-	default:
-	    cout << "Unknown record type " << util::type_name(m_type) << " during record encode.\r\n";
-	    return -EINVAL;
-    }
-#endif
-
     return 0;
 }
 

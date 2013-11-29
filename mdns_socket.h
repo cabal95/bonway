@@ -55,31 +55,6 @@ public:
     DataBuffer *recv(struct sockaddr *out_from, int *out_interface);
 };
 
-#if 0
-#define MAX_INTERFACES	128
-
-typedef struct g_mdns_socket {
-    int			fd;
-
-    struct {
-        char		*name;
-        struct in_addr	address;
-        char		*description;
-    } interfaces[MAX_INTERFACES];
-} mdns_socket;
-
-
-mdns_socket *mdns_socket_new();
-void mdns_socket_free(mdns_socket *sock);
-
-int mdns_socket_send(mdns_socket *sock, mdns_packet *packet, int iface);
-int mdns_socket_recv(mdns_socket *sock, mdns_packet **out_packet,
-		struct sockaddr *out_from, int *out_iface);
-
-int mdns_socket_bind(mdns_socket *sock, const char *iface_name,
-		const char *desc);
-#endif
-
 } /* namespace mDNS */
 
 #endif /* __MDNS_SOCKET_H__ */
