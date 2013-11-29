@@ -55,10 +55,8 @@ Relay::~Relay()
     for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
 	RecordVector &rv = mrit->second;
 
-	for (rit = rv.begin(); rit != rv.end(); rit++) {
-cout << "Deleting " << (*rit)->getName() << endl;
+	for (rit = rv.begin(); rit != rv.end(); rit++)
 	    delete *rit;
-	}
     }
 
     for (mrit = m_answer_queue.begin(); mrit != m_answer_queue.end(); mrit++) {
