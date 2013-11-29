@@ -8,6 +8,8 @@
 #include "mdns.h"
 #include "mdns_query.h"
 #include "mdns_record.h"
+#include "mdns_ptr_record.h"
+#include "mdns_srv_record.h"
 #include "databuffer.h"
 #include "mdns_packet.h"
 
@@ -156,60 +158,66 @@ DataBuffer packet::serialize()
 //
 DataBuffer packet::serializeQueries(QueryVector *queries, RecordVector *records)
 {
+    RecordVector::iterator	rrit;
     QueryVector::iterator	qit;
     map<string, int>		names;
     DataBuffer			data(1500);
-    size_t			lastSafeSize = 0;
-    int				qCount = 0, lastQCount, aCount = 0, lastACount;
+    packet			*pkt;
 
 
     if (queries->size() == 0)
 	return DataBuffer(0);
+    pkt = new packet();
+    pkt->flags(0);
 
     data.putInt16(0);
-    data.putInt16(0); // flags, 0 == query
+    data.putInt16(0); // flags.
     data.putInt16(0); // Query count.
     data.putInt16(0); // Answer count.
     data.putInt16(0); // Nameserver count.
     data.putInt16(0); // Additionals count.
-    lastSafeSize = data.getSize();
-    lastQCount = qCount;
-    lastACount = aCount;
 
     for (qit = queries->begin(); qit != queries->end(); ) {
 	query *q = *qit;
 
 	q->encode(data, &names);
-	qCount += 1;
 
+#if 0
+// TODO: Right now this doesn't work. We need a way to determine which
+// interface the packet came from.
+	//
+	// Add any known answers already.
+	//
 	if (q->getType() == RR_TYPE_PTR) {
 	    //
-	    // Check all records for type PTR whose name matches the
-	    // service_name.
+	    // Check all records whose name matches the service_name.
 	    //
+	    for (rrit = records->begin(); rrit != records->end(); rrit++) {
+		if (q->getName() == (*rrit)->getName()) {
+		    (*rrit)->encode(data, &names);
+
+		    if (data.getSize() <= 1500) {
+			pkt->addAnswer((*rrit)->clone());
+		    }
+		    else {
+			break;
+		    }
+		}
+	    }
 	}
+#endif
 
 	if (data.getSize() <= 1500) {
-	    lastSafeSize = data.getSize();
-	    delete q;
+	    pkt->addQuery(q);
 	    qit = queries->erase(qit);
 	}
 	else {
-	    data.setSize(lastSafeSize);
-	    qCount = lastQCount;
-	    aCount = lastACount;
-
 	    break;
 	}
     }
 
-    //
-    // Update the query count and answer count.
-    //
-    data.seek(4, SEEK_SET);
-    data.putInt16(htons(qCount));
-    data.putInt16(htons(aCount));
-    data.seek(0, SEEK_END);
+    data = pkt->serialize();
+    delete pkt;
 
     return data;
 }
@@ -229,60 +237,102 @@ DataBuffer packet::serializeAnswers(RecordVector *answers, RecordVector *records
     RecordVector::iterator	rrit;
     map<string, int>		names;
     DataBuffer			data(1500);
-    size_t			lastSafeSize = 0;
-    int				rrCount = 0, lastRRCount, adCount = 0, lastADCount;
+    packet			*pkt;
 
 
     if (answers->size() == 0)
 	return DataBuffer(0);
+    pkt = new packet();
+    pkt->flags(MDNS_PACKET_FLAG_AN | MDNS_PACKET_FLAG_AA);
 
     data.putInt16(0);
-    data.putInt16(htons(MDNS_PACKET_FLAG_AN | MDNS_PACKET_FLAG_AA)); // flags
+    data.putInt16(0); // flags.
     data.putInt16(0); // Query count.
     data.putInt16(0); // Answer count.
     data.putInt16(0); // Nameserver count.
     data.putInt16(0); // Additionals count.
-    lastSafeSize = data.getSize();
-    lastRRCount = rrCount;
-    lastADCount = adCount;
 
     for (rrit = answers->begin(); rrit != answers->end(); ) {
 	record *rr = *rrit;
 
 	rr->encode(data, &names);
-	rrCount += 1;
 
+#if 0
+// TODO: See above
 	if (rr->getType() == RR_TYPE_PTR) {
-	    //
-	    // Check all records for type PTR whose name matches the
-	    // service_name and add them to the additionals.
-	    //
+	    ptr_record *ptr = (ptr_record *)rr;
+
+cout << "Looking for additional records for " << ptr->getTargetName() << ".\r\n";
+	    serializeAddMatchingRecords(ptr->getTargetName(), data, pkt,
+					&names, records);
 	}
+#endif
 
 	if (data.getSize() <= 1500) {
-	    lastSafeSize = data.getSize();
-	    delete rr;
+	    pkt->addAnswer(rr);
 	    rrit = answers->erase(rrit);
 	}
 	else {
-	    data.setSize(lastSafeSize);
-	    rrCount = lastRRCount;
-	    adCount = lastADCount;
-
 	    break;
 	}
     }
 
-    //
-    // Update the answer count and additionals count.
-    //
-    data.seek(6, SEEK_SET);
-    data.putInt16(htons(rrCount));
-    data.seek(10, SEEK_SET);
-    data.putInt16(htons(adCount));
-    data.seek(0, SEEK_END);
+    data = pkt->serialize();
+    delete pkt;
 
     return data;
+}
+
+
+bool packet::serializeAddMatchingRecords(string name, DataBuffer &data,
+					 packet *pkt, map<string, int> *names,
+					 RecordVector *records)
+{
+    RecordVector::iterator	rvit;
+    RecordVector		toAdd;
+    record			*rr;
+
+
+    for (rvit = records->begin(); rvit != records->end(); rvit++) {
+	rr = *rvit;
+
+cout << "  Checking record " << rr->getName() << ".\r\n";
+	if (name == rr->getName()) {
+cout << "    Found record type " << rr->getType() << ".\r\n";
+	    rr->encode(data, names);
+
+	    //
+	    // This is all or nothing. We cannot add a primary record without
+	    // being able to add all the secondaries as well.
+	    //
+	    if (data.getSize() > 1500)
+		return false;
+
+	    //
+	    // If this is a SRV record then chain, for example to pickup any
+	    // A or AAAA records.
+	    //
+	    if (rr->getType() == RR_TYPE_SRV) {
+		srv_record *srv = (srv_record *)rr;
+
+		if (serializeAddMatchingRecords(srv->getTargetName(), data,
+						pkt, names, records) == false) {
+		    return false;
+		}
+	    }
+
+	    toAdd.push_back(rr);
+	}
+    }
+
+    //
+    // Add all the records that matched this name.
+    //
+    for (rvit = toAdd.begin(); rvit != toAdd.end(); rvit++) {
+	pkt->addAdditional((*rvit)->clone());
+    }
+
+    return true;
 }
 
 

@@ -116,6 +116,18 @@ string srv_record::getTargetName()
 }
 
 
+bool srv_record::isSame(const record *rhs) const
+{
+    if (record::isSame(rhs) == false)
+	return false;
+
+    if (m_target_name != ((const srv_record *)rhs)->m_target_name)
+	return false;
+
+    return true;
+}
+
+
 string srv_record::toString()
 {
     stringstream	ss;

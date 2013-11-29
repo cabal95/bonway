@@ -27,6 +27,7 @@ public:
     struct in_addr	getAddress();
 
     virtual a_record *clone() const { return new a_record(*this); }
+    virtual bool isSame(const record *rhs) const;
     virtual std::string toString();
 
     friend class record;

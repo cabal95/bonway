@@ -49,6 +49,8 @@ public:
     const StringVector &getNameSegments() const;
 
     virtual record *clone() const = 0;
+    virtual bool isSame(const record *rhs) const;
+
     virtual std::string toString();
 };
 

@@ -138,6 +138,7 @@ int main(int argc, char *argv[])
     }
 
     cout << "Exiting\r\n";
+    relay.terminate(*sock);
 
     delete sock;
 

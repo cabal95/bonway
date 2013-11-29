@@ -114,6 +114,15 @@ void nsec_record::setType(int type, bool state)
 }
 
 
+bool nsec_record::isSame(const record *rhs) const
+{
+    if (record::isSame(rhs) == false)
+	return false;
+
+    return true;
+}
+
+
 string nsec_record::toString()
 {
     stringstream	ss;

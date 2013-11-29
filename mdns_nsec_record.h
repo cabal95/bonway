@@ -26,6 +26,7 @@ public:
     void setType(int type, bool state = true);
 
     virtual nsec_record *clone() const { return new nsec_record(*this); }
+    virtual bool isSame(const record *rhs) const;
     virtual std::string toString();
 
     friend class record;

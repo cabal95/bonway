@@ -56,6 +56,18 @@ string ptr_record::getTargetName() const
 }
 
 
+bool ptr_record::isSame(const record *rhs) const
+{
+    if (record::isSame(rhs) == false)
+	return false;
+
+    if (m_target_name != ((const ptr_record *)rhs)->m_target_name)
+	return false;
+
+    return true;
+}
+
+
 string ptr_record::toString()
 {
     stringstream	ss;

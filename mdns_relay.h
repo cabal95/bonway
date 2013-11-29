@@ -68,6 +68,8 @@ public:
     void addService(RelayService service);
 
     int processPacket(Socket &socket, const packet *pkt, struct sockaddr from, int interface);
+
+    void terminate(Socket &socket);
 };
 
 } /* namespace mDNS */

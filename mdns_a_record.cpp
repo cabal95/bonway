@@ -47,6 +47,15 @@ int a_record::serialize(DataBuffer &data, map<string, int> *names)
 }
 
 
+bool a_record::isSame(const record *rhs) const
+{
+    if (record::isSame(rhs) == false)
+	return false;
+
+    return true;
+}
+
+
 string a_record::toString()
 {
     stringstream	ss;

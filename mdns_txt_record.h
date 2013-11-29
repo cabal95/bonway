@@ -27,6 +27,7 @@ public:
     StringList getText();
 
     virtual txt_record *clone() const { return new txt_record(*this); }
+    virtual bool isSame(const record *rhs) const;
     virtual std::string toString();
 
     friend class record;

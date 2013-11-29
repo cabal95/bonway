@@ -101,8 +101,10 @@ void Relay::sendQueries(Socket &socket)
     for (mqit = m_query_queue.begin(); mqit != m_query_queue.end(); mqit++) {
 	QueryVector &qv = mqit->second;
 
-	buffer = packet::serializeQueries(&qv, &m_known_records[mqit->first]);
-	socket.send(buffer, mqit->first);
+	while (qv.size() > 0) {
+	    buffer = packet::serializeQueries(&qv, &m_known_records[mqit->first]);
+	    socket.send(buffer, mqit->first);
+	}
     }
 }
 
@@ -117,8 +119,10 @@ void Relay::sendAnswers(Socket &socket)
     for (mrit = m_answer_queue.begin(); mrit != m_answer_queue.end(); mrit++) {
 	RecordVector &rv = mrit->second;
 
-	buffer = packet::serializeAnswers(&rv, &m_known_records[mrit->first]);
-	socket.send(buffer, mrit->first);
+	while (rv.size() > 0) {
+	    buffer = packet::serializeAnswers(&rv, &m_known_records[mrit->first]);
+	    socket.send(buffer, mrit->first);
+	}
     }
 }
 
@@ -295,27 +299,18 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 {
     vector<int>::const_iterator		iit;
     RecordVector::iterator		rvit;
-    const ptr_record			*ptr1, *ptr2;
 
 
     for (iit = rs->m_clients.begin(); iit != rs->m_clients.end(); iit++) {
 	m_answer_queue[*iit].push_back(rr->clone());
     }
 
-    if (rr->getType() == RR_TYPE_PTR) {
-	ptr1 = (const ptr_record *)rr;
-	for (rvit = m_known_records[interface].begin(); rvit != m_known_records[interface].end(); rvit++) {
-	    if ((*rvit)->getType() == RR_TYPE_PTR) {
-		ptr2 = (const ptr_record *)*rvit;
-
-		if (ptr1->getName() == ptr2->getName() && ptr1->getTargetName() == ptr2->getTargetName())
-		    break;
-	    }
-	}
-
-	if (rvit != m_known_records[interface].end()) {
+    for (rvit = m_known_records[interface].begin(); rvit != m_known_records[interface].end(); rvit++) {
+	if (rr->isSame(*rvit) == true) {
 	    delete *rvit;
 	    m_known_records[interface].erase(rvit);
+
+	    break;
 	}
     }
 
@@ -410,6 +405,47 @@ void Relay::relayAServiceAnswer(const a_record *a, int interface, string service
 	ifaces.push_back(*iit);
 	m_answer_queue[*iit].push_back(a->clone());
     }
+}
+
+
+//
+// Perform a clean termination. Mark all known answers as expired and
+// send them out.
+//
+void Relay::terminate(Socket &socket)
+{
+    map<int, RecordVector>::iterator	mrit;
+    RecordVector::iterator		rvit;
+    vector<int>::const_iterator		iit;
+
+
+    for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
+	RecordVector &rv = mrit->second;
+
+	for (rvit = rv.begin(); rvit != rv.end(); ) {
+	    record	*rr = *rvit;
+
+	    if (rr->isService()) {
+		const RelayService	*rs;
+
+		rs = isAnswerAllowed(rr->getServiceName(), mrit->first);
+		if (rs != NULL) {
+cout << "Sending expire for " << rr->getName() << endl;
+		    rr->setTTL(0);
+		    for (iit = rs->m_clients.begin(); iit != rs->m_clients.end(); iit++) {
+			m_answer_queue[*iit].push_back(rr->clone());
+		    }
+		}
+	    }
+
+	    //
+	    // Cleanup as we go, no associated records should be sent.
+	    //
+	    rvit = rv.erase(rvit);
+	}
+    }
+
+    sendAnswers(socket);
 }
 
 

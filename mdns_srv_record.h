@@ -38,6 +38,7 @@ public:
     std::string getTargetName();
 
     virtual srv_record *clone() const { return new srv_record(*this); }
+    virtual bool isSame(const record *rhs) const;
     virtual std::string toString();
 
     friend class record;

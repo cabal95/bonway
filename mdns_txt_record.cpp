@@ -111,6 +111,15 @@ StringList txt_record::getText()
 }
 
 
+bool txt_record::isSame(const record *rhs) const
+{
+    if (record::isSame(rhs) == false)
+	return false;
+
+    return true;
+}
+
+
 string txt_record::toString()
 {
     StringListIter	iter;

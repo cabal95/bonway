@@ -313,6 +313,21 @@ const StringVector &record::getNameSegments() const
 }
 
 
+bool record::isSame(const record *rhs) const
+{
+    if (m_name != rhs->m_name)
+	return false;
+
+    if (m_type != rhs->m_type)
+	return false;
+
+    if (m_clazz != rhs->m_clazz)
+	return false;
+
+    return true;
+}
+
+
 string record::toString()
 {
     stringstream	ss;
