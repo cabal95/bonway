@@ -43,24 +43,27 @@ Relay::~Relay()
     map<int, RecordVector>::iterator	mrit;
     QueryVector::iterator		qit;
     RecordVector::iterator		rit;
-    QueryVector				qv;
-    RecordVector			rv;
 
 
     for (mqit = m_query_queue.begin(); mqit != m_query_queue.end(); mqit++) {
-	qv = mqit->second;
+	QueryVector &qv = mqit->second;
+
 	for (qit = qv.begin(); qit != qv.end(); qit++)
 	    delete *qit;
     }
 
     for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
-	rv = mrit->second;
-	for (rit = rv.begin(); rit != rv.end(); rit++)
+	RecordVector &rv = mrit->second;
+
+	for (rit = rv.begin(); rit != rv.end(); rit++) {
+cout << "Deleting " << (*rit)->getName() << endl;
 	    delete *rit;
+	}
     }
 
     for (mrit = m_answer_queue.begin(); mrit != m_answer_queue.end(); mrit++) {
-	rv = mrit->second;
+	RecordVector &rv = mrit->second;
+
 	for (rit = rv.begin(); rit != rv.end(); rit++)
 	    delete *rit;
     }
@@ -441,6 +444,7 @@ cout << "Sending expire for " << rr->getName() << endl;
 	    //
 	    // Cleanup as we go, no associated records should be sent.
 	    //
+	    delete rr;
 	    rvit = rv.erase(rvit);
 	}
     }

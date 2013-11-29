@@ -10,6 +10,7 @@ DataBuffer::DataBuffer()
 {
     m_capacity = 256;
     m_data = (uint8_t *)malloc(m_capacity);
+    memset(m_data, 0, m_capacity);
     m_size = 0;
     m_offset = 0;
 }
@@ -19,6 +20,7 @@ DataBuffer::DataBuffer(size_t capacity)
 {
     m_capacity = capacity;
     m_data = (uint8_t *)malloc(m_capacity);
+    memset(m_data, 0, m_capacity);
     m_size = 0;
     m_offset = 0;
 }
@@ -41,6 +43,7 @@ DataBuffer::DataBuffer(const DataBuffer &rhs)
     m_size = rhs.m_size;
     m_offset = rhs.m_offset;
     m_data = (uint8_t *)malloc(m_capacity);
+    memset(m_data + m_size, 0, (m_capacity - m_size));
     memcpy(m_data, rhs.m_data, m_size);
 }
 
@@ -64,6 +67,7 @@ void DataBuffer::increaseIfNeeded(size_t size)
     if (cap > m_capacity) {
 	m_data = (uint8_t *)realloc(m_data, cap);
 	m_capacity = cap;
+	memset(m_data + m_size, 0, (m_capacity - m_size));
     }
 
     m_size += size;
@@ -324,6 +328,7 @@ DataBuffer &DataBuffer::operator=(const DataBuffer &rhs)
     m_size = rhs.m_size;
     m_offset = rhs.m_offset;
     m_data = (uint8_t *)malloc(m_capacity);
+    memset(m_data + m_size, 0, (m_capacity - m_size));
     memcpy(m_data, rhs.m_data, m_size);
 
     return *this;
