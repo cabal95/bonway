@@ -1,11 +1,12 @@
-Basic filtering for airplay is working. Need to properly assemble the NSEC
-records and A records when sending an answer packet to speed things up.
+Need to properly assemble the NSEC records and A records when sending an
+answer packet to speed things up.
 
-When quiting de-register messages should be sent (TTL = 0) for all known
-records.
+Need a WAN mode which allows site-to-site VPN tunnels to work. Maybe just
+a secondary UDP port with a few bytes of overhead to identify the server
+and the "interface" (a remote server might provide a staff and public
+interface which need to be treated differently).
 
-When starting, probe queries should be sent to all interfaces for known
-service types that we will be relaying.
+Verify no more crashes, post initial blog article about it.
 
 --
 
@@ -17,16 +18,6 @@ Re-assembled packets should be flagged as either a query or a response.
 
 When sending, individual RRs should be sent so they can be queued up
 and sent in bulk.
-
----
-
-It sorta works now.  Most services show up, though they sometimes vanish
-right away.  I'm thinking the bits are not being set properly on the
-outgoing packets.  I might be setting the cache flush bit or something
-like that and causing issues.  I should read a packet, decode it and
-then re-encoe it and compare the two to see what is different. In theory
-they should be identical.
-
 
 ---
 
