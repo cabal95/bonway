@@ -112,6 +112,15 @@ record *record::decode(DataBuffer &data)
 	    break;
 	}
 
+	case RR_TYPE_OPT:
+	{
+	    //
+	    // These record types are ignored.
+	    //
+	    data.seek(dlen);
+	    break;
+	}
+
 	default:
 	    data.seek(dlen);
 	    cout << "Unknown record type " << util::type_name(type) << ".\r\n";

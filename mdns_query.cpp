@@ -92,9 +92,11 @@ void query::setName(string value)
     if (name_segment.size() >= 3) {
 	if (name_segment[1] == "_udp" || name_segment[1] == "_tcp") {
 	    for (int i = (name_segment.size() - 1); i > 0; i--) {
-		if (service_name != "")
-		    service_name += ".";
-		service_name += name_segment[i];
+		if (name_segment[i][0] == '_') {
+		    if (service_name != "")
+			service_name += ".";
+		    service_name += name_segment[i];
+		}
 	    }
 	}
     }

@@ -11,6 +11,7 @@ namespace mDNS
 		RR_TYPE_AAAA	= 0x1c,
 		RR_TYPE_SRV	= 0x21,
 		RR_TYPE_NSEC	= 0x2f,
+		RR_TYPE_OPT	= 0x29,
 		RR_TYPE_ANY	= 0xff;
 
     const int	RR_CLASS_IN	= 0x01,

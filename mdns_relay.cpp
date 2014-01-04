@@ -70,7 +70,21 @@ Relay::~Relay()
 
 void Relay::addService(RelayService service)
 {
+    vector<string>::const_iterator	sit;
+    vector<int>::const_iterator		iit;
+
+
     m_services.push_back(service);
+
+    //
+    // Send an initial query for this service.
+    //
+    for (sit = service.m_types.begin(); sit != service.m_types.end(); sit++) {
+	query	q = query(*sit + ".local", RR_TYPE_PTR, RR_CLASS_IN);
+	for (iit = service.m_servers.begin(); iit != service.m_servers.end(); iit++) {
+	    m_query_queue[*iit].push_back(new query(q));
+	}
+    }
 }
 
 

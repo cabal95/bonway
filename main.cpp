@@ -100,7 +100,8 @@ int main(int argc, char *argv[])
 	for (sit = types.begin(); sit != types.end(); sit++) {
 	    for (iit = sifaces.begin(); iit != sifaces.end(); iit++) {
 		for (iiit = cifaces.begin(); iiit != cifaces.end(); iiit++) {
-		    relay.addService(RelayService(*sit, *iiit, *iit));
+		    if (*iiit != *iit)
+			relay.addService(RelayService(*sit, *iiit, *iit));
 		}
 	    }
 	}
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
 	}
 
 	inet_ntop(AF_INET, &from_in->sin_addr, addr, sizeof(addr));
-	cout << "Got packet from " << addr << " on interface " << iface << ".\r\n";
+//	cout << "Got packet from " << addr << " on interface " << iface << ".\r\n";
 
 	pkt = packet::deserialize(*buffer);
 	delete buffer;
