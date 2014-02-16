@@ -31,6 +31,14 @@ RelayService::RelayService(string type, int client, int server)
 }
 
 
+RelayService::RelayService(string type, std::vector<int> clients, std::vector<int> servers)
+{
+    m_types.push_back(type);
+    m_clients = clients;
+    m_servers = servers;
+}
+
+
 Relay::Relay()
 {
     m_last_expire_check = 0;

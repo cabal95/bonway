@@ -25,6 +25,7 @@ public:
     RelayService();
     RelayService(std::string type);
     RelayService(std::string type, int client, int server);
+    RelayService(std::string type, std::vector<int> clients, std::vector<int> servers);
 
     void addType(std::string type);
     void addClientInterface(int interface);

@@ -98,12 +98,7 @@ int main(int argc, char *argv[])
 	cifaces = (*csit).clientInterfaces();
 
 	for (sit = types.begin(); sit != types.end(); sit++) {
-	    for (iit = sifaces.begin(); iit != sifaces.end(); iit++) {
-		for (iiit = cifaces.begin(); iiit != cifaces.end(); iiit++) {
-		    if (*iiit != *iit)
-			relay.addService(RelayService(*sit, *iiit, *iit));
-		}
-	    }
+            relay.addService(RelayService(*sit, cifaces, sifaces));
 	}
     }
 
