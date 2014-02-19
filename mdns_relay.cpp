@@ -1,3 +1,5 @@
+#include <net/if.h>
+
 #include <algorithm>
 #include <iostream>
 #include "mdns.h"
@@ -276,7 +278,7 @@ void Relay::processQueryPacket(const packet *pkt, int interface)
 	    else {
 		rs = isQueryAllowed(svcname, interface);
 		if (rs != NULL)
-		    relayServiceQuery(rs, q);
+		    relayServiceQuery(rs, q, interface);
 	    }
 	}
 	else if (q->getNameSegments().size() == 2 && q->getType() == RR_TYPE_A)
@@ -297,7 +299,8 @@ void Relay::processAnswerPacket(const packet *pkt, int interface)
 	rr = *rvit;
 
 	if (rr->isService()) {
-	    rs = isAnswerAllowed(rr->getServiceName(), interface);
+            svcname = rr->getServiceName();
+	    rs = isAnswerAllowed(svcname, interface);
 	    if (rs != NULL)
 		relayServiceAnswer(rs, rr, interface);
 	}
@@ -307,12 +310,15 @@ void Relay::processAnswerPacket(const packet *pkt, int interface)
 }
 
 
-void Relay::relayServiceQuery(const RelayService *rs, const query *q)
+void Relay::relayServiceQuery(const RelayService *rs, const query *q, int interface)
 {
     vector<int>::const_iterator	iit;
 
 
     for (iit = rs->m_servers.begin(); iit != rs->m_servers.end(); iit++) {
+	if (interface == *iit)
+	    continue;
+
 	m_query_queue[*iit].push_back(new query(*q));
     }
 }
@@ -325,6 +331,9 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 
 
     for (iit = rs->m_clients.begin(); iit != rs->m_clients.end(); iit++) {
+	if (interface == *iit)
+	    continue;
+
 	m_answer_queue[*iit].push_back(rr->clone());
     }
 
@@ -381,9 +390,9 @@ void Relay::relayAQuery(const query *q, int interface)
 	for (rrit = mrit->second.begin(); rrit != mrit->second.end(); rrit++) {
 	    if ((*rrit)->getType() == RR_TYPE_SRV) {
 		srv = (srv_record *)(*rrit);
-		if (srv->getTargetName() == q->getName()) {
+		if (strcasecmp(srv->getTargetName().c_str(), q->getName().c_str()) == 0) {
 		    m_query_queue[mrit->first].push_back(new query(*q));
-		    break;
+//		    break;
 		}
 	    }
 	}
@@ -404,8 +413,9 @@ void Relay::relayAAnswer(const a_record *a, int interface)
     for (rrit = m_known_records[interface].begin(); rrit != m_known_records[interface].end(); rrit++) {
 	if ((*rrit)->getType() == RR_TYPE_SRV) {
 	    srv = (srv_record *)(*rrit);
-	    if (srv->getTargetName() == a->getName())
+	    if (strcasecmp(srv->getTargetName().c_str(), a->getName().c_str()) == 0) {
 		relayAServiceAnswer(a, interface, srv->getServiceName(), ifaces);
+	    }
 	}
     }
 }
@@ -422,6 +432,8 @@ void Relay::relayAServiceAnswer(const a_record *a, int interface, string service
 	return;
 
     for (iit = rs->m_clients.begin(); iit != rs->m_clients.end(); iit++) {
+	if (interface == *iit)
+	    continue;
 	if (find(ifaces.begin(), ifaces.end(), *iit) != ifaces.end())
 	    continue;
 

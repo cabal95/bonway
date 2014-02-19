@@ -54,7 +54,7 @@ protected:
 
     void processQueryPacket(const packet *pkt, int interface);
     void processAnswerPacket(const packet *pkt, int interface);
-    void relayServiceQuery(const RelayService *service, const query *q);
+    void relayServiceQuery(const RelayService *service, const query *q, int interface);
     void relayAQuery(const query *q, int interface);
     void relayServiceAnswer(const RelayService *service, const record *rr, int interface);
     void relayAAnswer(const a_record *a, int interface);
