@@ -1,3 +1,6 @@
+Need to check all comparisons and make sure they are case insensitive when
+looking at service names, host names, etc.
+
 Need to properly assemble the NSEC records and A records when sending an
 answer packet to speed things up.
 
@@ -5,8 +8,6 @@ Need a WAN mode which allows site-to-site VPN tunnels to work. Maybe just
 a secondary UDP port with a few bytes of overhead to identify the server
 and the "interface" (a remote server might provide a staff and public
 interface which need to be treated differently).
-
-Verify no more crashes, post initial blog article about it.
 
 --
 
