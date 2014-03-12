@@ -1,6 +1,9 @@
 Need to check all comparisons and make sure they are case insensitive when
 looking at service names, host names, etc.
 
+Relay needs to try and renew cached records once they have reached less
+than half their time, and again at 1/4 TTL.
+
 Need to properly assemble the NSEC records and A records when sending an
 answer packet to speed things up.
 
