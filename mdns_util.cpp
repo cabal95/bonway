@@ -296,7 +296,7 @@ mtime_t util::time()
     if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
 	abort();
 
-    return (((mtime_t)ts.tv_sec) + ((mtime_t)ts.tv_nsec / 1000000));
+    return (((mtime_t)ts.tv_sec * 1000) + ((mtime_t)ts.tv_nsec / 1000000));
 }
 
 
