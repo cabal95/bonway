@@ -1,5 +1,3 @@
-#include <net/if.h>
-
 #include <algorithm>
 #include <iostream>
 #include "mdns.h"
@@ -337,16 +335,18 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 	m_answer_queue[*iit].push_back(rr->clone());
     }
 
-    for (rvit = m_known_records[interface].begin(); rvit != m_known_records[interface].end(); rvit++) {
-	if (rr->isSame(*rvit) == true) {
-	    delete *rvit;
-	    m_known_records[interface].erase(rvit);
+    if (rr->isService()) {
+	for (rvit = m_known_records[interface].begin(); rvit != m_known_records[interface].end(); rvit++) {
+	    if (rr->isSame(*rvit) == true) {
+		delete *rvit;
+		m_known_records[interface].erase(rvit);
 
-	    break;
+		break;
+	    }
 	}
-    }
 
-    m_known_records[interface].push_back(rr->clone());
+	m_known_records[interface].push_back(rr->clone());
+    }
 }
 
 
@@ -357,7 +357,7 @@ void Relay::checkCacheExpiry()
     time_t				now = time(NULL);
 
 
-    if ((m_last_expire_check + 5000) > util::time())
+    if ((m_last_expire_check + 5000 + 3600000) > util::time())
 	return;
 
     for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
@@ -392,7 +392,6 @@ void Relay::relayAQuery(const query *q, int interface)
 		srv = (srv_record *)(*rrit);
 		if (strcasecmp(srv->getTargetName().c_str(), q->getName().c_str()) == 0) {
 		    m_query_queue[mrit->first].push_back(new query(*q));
-//		    break;
 		}
 	    }
 	}
