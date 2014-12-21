@@ -1,3 +1,6 @@
+#include <net/if.h>
+#include <signal.h>
+
 #include <algorithm>
 #include <iostream>
 #include "mdns.h"
@@ -7,6 +10,16 @@
 #include "mdns_srv_record.h"
 #include "mdns_util.h"
 
+
+
+mDNS::Relay *__relay = NULL;
+
+
+void sigusr1_signal(int signum)
+{
+    if (__relay != NULL)
+        __relay->dumpCache();
+}
 
 using namespace std;
 namespace mDNS {
@@ -41,6 +54,8 @@ RelayService::RelayService(string type, std::vector<int> clients, std::vector<in
 
 Relay::Relay()
 {
+    signal(SIGUSR1, sigusr1_signal);
+    __relay = this;
     m_last_expire_check = 0;
 }
 
@@ -305,6 +320,26 @@ void Relay::processAnswerPacket(const packet *pkt, int interface)
 	else if (rr->getNameSegments().size() == 2 && rr->getType() == RR_TYPE_A)
 	    relayAAnswer((a_record *)rr, interface);
     }
+
+    for (rvit = pkt->additionals().begin(); rvit != pkt->additionals().end(); rvit++) {
+	rr = *rvit;
+
+	if (rr->isService()) {
+            if (rr->isUniqueService()) {
+                RecordVector::iterator		rvit2;
+	        for (rvit2 = m_known_records[interface].begin(); rvit2 != m_known_records[interface].end(); rvit2++) {
+	            if (rr->isSame(*rvit2) == true) {
+		        delete *rvit2;
+		        m_known_records[interface].erase(rvit2);
+
+		        break;
+	            }
+	        }
+
+	        m_known_records[interface].push_back(rr->clone());
+            }
+	}
+    }
 }
 
 
@@ -335,7 +370,7 @@ void Relay::relayServiceAnswer(const RelayService *rs, const record *rr, int int
 	m_answer_queue[*iit].push_back(rr->clone());
     }
 
-    if (rr->isService()) {
+    if (rr->isUniqueService()) {
 	for (rvit = m_known_records[interface].begin(); rvit != m_known_records[interface].end(); rvit++) {
 	    if (rr->isSame(*rvit) == true) {
 		delete *rvit;
@@ -357,12 +392,12 @@ void Relay::checkCacheExpiry()
     time_t				now = time(NULL);
 
 
-    if ((m_last_expire_check + 5000 + 3600000) > util::time())
+    if ((m_last_expire_check + 5000) > util::time())
 	return;
 
     for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
 	for (rrit = mrit->second.begin(); rrit != mrit->second.end(); ) {
-	    if (((*rrit)->getTTLBase() + (*rrit)->getTTL()) < now) {
+	    if (((*rrit)->getTTLBase() + (*rrit)->getTTL() + 3600) < now) {
 		cout << "Expiring record " << (*rrit)->getName() << endl;
 		delete *rrit;
 		rrit = mrit->second.erase(rrit);
@@ -459,7 +494,7 @@ void Relay::terminate(Socket &socket)
 	for (rvit = rv.begin(); rvit != rv.end(); ) {
 	    record	*rr = *rvit;
 
-	    if (rr->isService()) {
+	    if (rr->isUniqueService()) {
 		const RelayService	*rs;
 
 		rs = isAnswerAllowed(rr->getServiceName(), mrit->first);
@@ -483,6 +518,28 @@ cout << "Sending expire for " << rr->getName() << endl;
     sendAnswers(socket);
 }
 
+
+void Relay::dumpCache()
+{
+    map<int, RecordVector>::iterator	mrit;
+    RecordVector::iterator		rvit;
+    char ifname[128];
+    time_t now = time(NULL);
+
+
+    for (mrit = m_known_records.begin(); mrit != m_known_records.end(); mrit++) {
+	RecordVector &rv = mrit->second;
+
+	if_indextoname(mrit->first, ifname);
+        cout << "\r\n\r\nCached entries from interface " << ifname << "\r\n";
+	for (rvit = rv.begin(); rvit != rv.end(); rvit++) {
+	    record	*rr = *rvit;
+            int		ttl = (rr->getTTLBase() + rr->getTTL() - now);
+
+            cout << "  " << rr->toString() << " (" << ttl << "ttl remaining)\r\n";
+	}
+    }
+}
 
 } /* namespace mDNS */
 

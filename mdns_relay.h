@@ -71,6 +71,8 @@ public:
     int processPacket(Socket &socket, const packet *pkt, struct sockaddr from, int interface);
 
     void terminate(Socket &socket);
+
+    void dumpCache();
 };
 
 } /* namespace mDNS */
