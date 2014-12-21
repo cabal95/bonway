@@ -248,6 +248,12 @@ bool record::isService() const
 }
 
 
+bool record::isUniqueService() const
+{
+    return (isService() && m_name[0] != '_');
+}
+
+
 string record::getServiceName() const
 {
     return m_service_name;

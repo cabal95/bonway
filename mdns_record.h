@@ -45,6 +45,7 @@ public:
     time_t getTTLBase() const;
 
     bool isService() const;
+    bool isUniqueService() const;
     std::string getServiceName() const;
     const StringVector &getNameSegments() const;
 
