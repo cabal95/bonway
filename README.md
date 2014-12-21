@@ -21,7 +21,8 @@ auto-start at the next boot.
 Configuration
 =============
 
-Working example:
+Bonway gets it's configuration from the */etc/bonway.conf* file. Here is a
+working example:
 
 ```
 service {
